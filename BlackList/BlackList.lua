@@ -257,7 +257,20 @@ function BlackList:HandleEvent(event)
 
 					if (not alreadywarned) then
 						table.insert(Already_Warned_For["PARTY"], name);
-						BlackList:AddMessage("BlackList: " .. name .. " is blacklisted and joined your party.", "yellow");
+						
+						-- Play warning sound if enabled
+						if (BlackList:GetOption("playSounds", true)) then
+							PlaySound("RaidWarning");
+						end
+						
+						-- Display prominent multi-line warning
+						BlackList:AddMessage("==========================================", "yellow");
+						BlackList:AddMessage("WARNING: Blacklisted player in your party!", "yellow");
+						BlackList:AddMessage(name .. " is blacklisted!", "yellow");
+						if player["reason"] and player["reason"] ~= "" then
+							BlackList:AddMessage("Reason: " .. player["reason"], "yellow");
+						end
+						BlackList:AddMessage("==========================================", "yellow");
 					end
 				end
 			end
