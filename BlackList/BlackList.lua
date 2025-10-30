@@ -49,6 +49,9 @@ end
 
 local Orig_ChatFrame_OnEvent;
 local Orig_InviteByName;
+local Orig_FriendsFrame_ShowSubFrame;
+local BlackList_AllowTabSwitch = true;
+
 -- Hooks onto the functions needed
 function BlackList:HookFunctions()
 
@@ -57,6 +60,10 @@ function BlackList:HookFunctions()
 
 	Orig_InviteByName = InviteByName;
 	InviteByName = BlackList_InviteByName;
+	
+	-- Hook FriendsFrame_ShowSubFrame to preserve BlackList tab
+	Orig_FriendsFrame_ShowSubFrame = FriendsFrame_ShowSubFrame;
+	FriendsFrame_ShowSubFrame = BlackList_FriendsFrame_ShowSubFrame;
 	
 	DEFAULT_CHAT_FRAME:AddMessage("BlackList: Hooks installed", 0, 1, 0);
 
@@ -174,6 +181,18 @@ function BlackList_InviteByName(name)
 
 	Orig_InviteByName(name);
 
+end
+
+-- Hooked FriendsFrame_ShowSubFrame to prevent automatic tab switching
+function BlackList_FriendsFrame_ShowSubFrame(frameName)
+	-- If we're on BlackList and this isn't an allowed switch, stay on BlackList
+	if BlackListFrame and BlackListFrame:IsVisible() and not BlackList_AllowTabSwitch then
+		-- Don't switch away from BlackList
+		return;
+	end
+	
+	-- Otherwise, allow the switch
+	Orig_FriendsFrame_ShowSubFrame(frameName);
 end
 
 -- Registers slash cmds
