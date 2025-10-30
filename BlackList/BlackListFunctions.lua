@@ -43,7 +43,11 @@ function BlackList:AddPlayer(player, reason)
 
 	self:AddMessage(name .. " " .. ADDED_TO_BLACKLIST, "yellow");
 
-	self:UpdateUI();
+	-- Update standalone UI if it exists
+	local standaloneFrame = getglobal("BlackListStandaloneFrame")
+	if standaloneFrame and standaloneFrame:IsVisible() then
+		self:UpdateStandaloneUI()
+	end
 
 end
 
@@ -73,7 +77,18 @@ function BlackList:RemovePlayer(player)
 
 	self:AddMessage(name .. " " .. REMOVED_FROM_BLACKLIST, "yellow");
 
-	self:UpdateUI();
+	-- Update standalone UI if it exists
+	local standaloneFrame = getglobal("BlackListStandaloneFrame")
+	if standaloneFrame and standaloneFrame:IsVisible() then
+		self:UpdateStandaloneUI()
+		-- Close details window if no players left or if removed player was selected
+		local detailsFrame = getglobal("BlackListStandaloneDetailsFrame")
+		if detailsFrame and detailsFrame:IsVisible() then
+			if self:GetNumBlackLists() == 0 then
+				detailsFrame:Hide()
+			end
+		end
+	end
 
 end
 
