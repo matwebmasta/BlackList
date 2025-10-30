@@ -22,7 +22,10 @@ function BlackList:OnLoad()
 	self:HookFunctions();
 	self:RegisterSlashCmds();
 
-	FriendsFrameShareListButton:Disable();
+	-- Disable share list button if it exists
+	if FriendsFrameShareListButton then
+		FriendsFrameShareListButton:Disable();
+	end
 	
 	-- Initialize pfUI integration if available
 	if InitializePfUIIntegration then
