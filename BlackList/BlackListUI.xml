@@ -85,7 +85,7 @@
 					</OnShow>
 					<OnClick>
 						FriendsFrame.showFriendsList = 1;
-						FriendsFrame_Update();
+						BlackList:ShowTab();
 					</OnClick>
 				</Scripts>
 			</Button>
@@ -103,7 +103,7 @@
 					</OnShow>
 					<OnClick>
 						FriendsFrame.showFriendsList = nil;
-						FriendsFrame_Update();
+						BlackList:ShowTab();
 					</OnClick>
 				</Scripts>
 			</Button>
