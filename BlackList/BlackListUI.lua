@@ -376,16 +376,8 @@ BINDING_NAME_TOGGLE_BLACKLIST	= "Toggle BlackList";
 -- Inserts all of the UI elements
 function BlackList:InsertUI()
 
-	-- Add tab buttons to Friends tab (using XML templates like original)
-	CreateFrame("Button", "FriendFrameToggleTab3", getglobal("FriendsListFrame"), "FriendsFrameToggleTab3");
-	CreateFrame("Button", "IgnoreFrameToggleTab3", getglobal("IgnoreListFrame"), "IgnoreFrameToggleTab3");
-	
-	-- Add the tab itself
-	table.insert(FRIENDSFRAME_SUBFRAMES, "BlackListFrame");
-	CreateFrame("Frame", "BlackListFrame", getglobal("FriendsFrame"), "BlackListFrame");
-	
-	-- Apply pfUI styling with delay to ensure pfUI and tabs are loaded
-	DelayedStyleTabs();
+	-- Create standalone BlackList window (no FriendsFrame integration)
+	self:CreateStandaloneWindow();
 
 	-- Create name prompt
 	StaticPopupDialogs["BLACKLIST_PLAYER"] = {
@@ -405,6 +397,106 @@ function BlackList:InsertUI()
 		hideOnEscape = 1
 		};
 
+end
+
+function BlackList:CreateStandaloneWindow()
+	-- Create main frame
+	local frame = CreateFrame("Frame", "BlackListStandaloneFrame", UIParent)
+	frame:SetWidth(350)
+	frame:SetHeight(450)
+	frame:SetPoint("CENTER")
+	frame:SetMovable(true)
+	frame:EnableMouse(true)
+	frame:SetClampedToScreen(true)
+	frame:Hide()
+	
+	-- Backdrop
+	frame:SetBackdrop({
+		bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+		edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+		tile = true, tileSize = 32, edgeSize = 32,
+		insets = {left = 11, right = 12, top = 12, bottom = 11}
+	})
+	
+	-- Apply pfUI styling if available
+	if IsPfUIActive() then
+		pfUI.api.CreateBackdrop(frame, nil, true)
+	end
+	
+	-- Title
+	local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+	title:SetPoint("TOP", 0, -15)
+	title:SetText("Black List")
+	
+	-- Close button
+	local closeBtn = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
+	closeBtn:SetPoint("TOPRIGHT", -5, -5)
+	
+	-- Make draggable
+	frame:SetScript("OnMouseDown", function()
+		if arg1 == "LeftButton" then
+			this:StartMoving()
+		end
+	end)
+	frame:SetScript("OnMouseUp", function()
+		this:StopMovingOrSizing()
+	end)
+	
+	-- Scroll frame for list (reuse existing BlackList buttons logic)
+	-- For now, just add buttons at the bottom
+	
+	-- Add Friend button
+	local addBtn = CreateFrame("Button", "BlackListStandalone_AddButton", frame, "UIPanelButtonTemplate")
+	addBtn:SetWidth(160)
+	addBtn:SetHeight(22)
+	addBtn:SetPoint("BOTTOMLEFT", 15, 15)
+	addBtn:SetText("Add Player")
+	addBtn:SetScript("OnClick", function()
+		StaticPopup_Show("BLACKLIST_PLAYER")
+	end)
+	
+	-- Remove button
+	local removeBtn = CreateFrame("Button", "BlackListStandalone_RemoveButton", frame, "UIPanelButtonTemplate")
+	removeBtn:SetWidth(160)
+	removeBtn:SetHeight(22)
+	removeBtn:SetPoint("BOTTOMRIGHT", -15, 15)
+	removeBtn:SetText("Remove Player")
+	removeBtn:SetScript("OnClick", function()
+		local index = BlackList:GetSelectedBlackList()
+		if index and index > 0 then
+			local player = BlackList:GetPlayerByIndex(index)
+			if player then
+				BlackList:RemovePlayer(player["name"])
+				BlackList:UpdateStandaloneUI()
+			end
+		end
+	end)
+	
+	-- Apply pfUI styling to buttons if available
+	if IsPfUIActive() then
+		pfUI.api.CreateBackdrop(addBtn, nil, true)
+		pfUI.api.CreateBackdrop(removeBtn, nil, true)
+	end
+	
+	DEFAULT_CHAT_FRAME:AddMessage("BlackList: Standalone window created", 0, 1, 0)
+end
+
+function BlackList:ToggleStandaloneWindow()
+	local frame = getglobal("BlackListStandaloneFrame")
+	if frame then
+		if frame:IsVisible() then
+			frame:Hide()
+		else
+			frame:Show()
+			self:UpdateStandaloneUI()
+		end
+	end
+end
+
+function BlackList:UpdateStandaloneUI()
+	-- TODO: Populate the list with blacklisted players
+	-- For now, just a placeholder
+	DEFAULT_CHAT_FRAME:AddMessage("BlackList: UI updated", 0, 1, 0)
 end
 
 function BlackList:ClickBlackList()

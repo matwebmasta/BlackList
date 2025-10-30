@@ -21,7 +21,6 @@ function BlackList:OnLoad()
 	self:RegisterEvents();
 	self:HookFunctions();
 	self:RegisterSlashCmds();
-	self:HookBlizzardTabs();
 
 	-- Disable share list button if it exists
 	if FriendsFrameShareListButton then
@@ -32,6 +31,9 @@ function BlackList:OnLoad()
 	if InitializePfUIIntegration then
 		InitializePfUIIntegration();
 	end
+	
+	-- Create minimap button
+	self:CreateMinimapButton();
 
 end
 
@@ -50,8 +52,6 @@ end
 
 local Orig_ChatFrame_OnEvent;
 local Orig_InviteByName;
-local Orig_FriendsFrame_ShowSubFrame;
-local BlackList_UserClickedTab = false;
 
 -- Hooks onto the functions needed
 function BlackList:HookFunctions()
@@ -62,35 +62,8 @@ function BlackList:HookFunctions()
 	Orig_InviteByName = InviteByName;
 	InviteByName = BlackList_InviteByName;
 	
-	-- Hook FriendsFrame_ShowSubFrame to preserve BlackList tab
-	Orig_FriendsFrame_ShowSubFrame = FriendsFrame_ShowSubFrame;
-	FriendsFrame_ShowSubFrame = BlackList_FriendsFrame_ShowSubFrame;
-	
 	DEFAULT_CHAT_FRAME:AddMessage("BlackList: Hooks installed", 0, 1, 0);
 
-end
-
--- Hook Blizzard's Friends and Ignore tabs to set flag
-function BlackList:HookBlizzardTabs()
-	-- Hook Friends tab click
-	if FriendsFrameTab1 and FriendsFrameTab1:GetScript("OnClick") then
-		local origOnClick = FriendsFrameTab1:GetScript("OnClick");
-		FriendsFrameTab1:SetScript("OnClick", function()
-			BlackList_UserClickedTab = true;
-			origOnClick();
-		end);
-	end
-	
-	-- Hook Ignore tab click
-	if FriendsFrameTab2 and FriendsFrameTab2:GetScript("OnClick") then
-		local origOnClick = FriendsFrameTab2:GetScript("OnClick");
-		FriendsFrameTab2:SetScript("OnClick", function()
-			BlackList_UserClickedTab = true;
-			origOnClick();
-		end);
-	end
-	
-	DEFAULT_CHAT_FRAME:AddMessage("BlackList: Hooked Blizzard tabs", 0, 1, 0);
 end
 
 -- Hooked ChatFrame_OnEvent function (like SuperIgnore does)
@@ -205,29 +178,6 @@ function BlackList_InviteByName(name)
 
 	Orig_InviteByName(name);
 
-end
-
--- Hooked FriendsFrame_ShowSubFrame to preserve BlackList tab
-function BlackList_FriendsFrame_ShowSubFrame(frameName)
-	-- If trying to show BlackListFrame, always allow it
-	if frameName == "BlackListFrame" then
-		Orig_FriendsFrame_ShowSubFrame(frameName);
-		return;
-	end
-	
-	-- If we're currently on BlackList and trying to switch away
-	if BlackListFrame and BlackListFrame:IsVisible() then
-		-- Only allow if user clicked a tab
-		if BlackList_UserClickedTab then
-			BlackList_UserClickedTab = false;  -- Reset flag
-			Orig_FriendsFrame_ShowSubFrame(frameName);
-		end
-		-- Otherwise block the switch (it's an automatic update)
-		return;
-	end
-	
-	-- Not on BlackList, allow the switch
-	Orig_FriendsFrame_ShowSubFrame(frameName);
 end
 
 -- Registers slash cmds
@@ -384,4 +334,62 @@ function BlackListPlayer(player, reason)
 
 	BlackList:AddPlayer(player, reason);
 
+end
+
+-- Create minimap button
+function BlackList:CreateMinimapButton()
+	local button = CreateFrame("Button", "BlackListMinimapButton", Minimap)
+	button:SetWidth(31)
+	button:SetHeight(31)
+	button:SetFrameStrata("MEDIUM")
+	button:SetPoint("TOPLEFT", Minimap, "TOPLEFT", -10, 10)
+	button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+	button:RegisterForDrag("LeftButton")
+	
+	-- Icon
+	local icon = button:CreateTexture(nil, "BACKGROUND")
+	icon:SetWidth(20)
+	icon:SetHeight(20)
+	icon:SetPoint("CENTER", 0, 1)
+	icon:SetTexture("Interface\\Icons\\INV_Misc_Note_01")
+	
+	-- Border
+	local overlay = button:CreateTexture(nil, "OVERLAY")
+	overlay:SetWidth(53)
+	overlay:SetHeight(53)
+	overlay:SetTexture("Interface\\Minimap\\MiniMap-TrackingBorder")
+	overlay:SetPoint("TOPLEFT", -2, 2)
+	
+	-- Click handler
+	button:SetScript("OnClick", function()
+		if arg1 == "LeftButton" then
+			BlackList:ToggleStandaloneWindow()
+		elseif arg1 == "RightButton" then
+			BlackList:ShowNewOptions()
+		end
+	end)
+	
+	-- Drag handler
+	button:SetScript("OnDragStart", function()
+		this:StartMoving()
+	end)
+	
+	button:SetScript("OnDragStop", function()
+		this:StopMovingOrSizing()
+	end)
+	
+	-- Tooltip
+	button:SetScript("OnEnter", function()
+		GameTooltip:SetOwner(this, "ANCHOR_LEFT")
+		GameTooltip:AddLine("BlackList")
+		GameTooltip:AddLine("Left-click: Toggle BlackList", 1, 1, 1)
+		GameTooltip:AddLine("Right-click: Options", 1, 1, 1)
+		GameTooltip:Show()
+	end)
+	
+	button:SetScript("OnLeave", function()
+		GameTooltip:Hide()
+	end)
+	
+	DEFAULT_CHAT_FRAME:AddMessage("BlackList: Minimap button created", 0, 1, 0)
 end
