@@ -191,7 +191,7 @@ local function CreateBlackListOption(frame, name, desc, pad, onclick)
 	ct:SetText(desc)
 	ct:SetWidth(240)  -- Set max width for text wrapping
 	ct:SetJustifyH("LEFT")
-	ct:SetWordWrap(true)
+	-- Note: SetWordWrap doesn't exist in Classic WoW 1.12
 	
 	return c, ct
 end
@@ -301,8 +301,10 @@ function BlackList:ShowNewOptions()
 	frame:SetPoint("TOPLEFT", FriendsFrame, "TOPRIGHT", 10, 0)
 	
 	-- Update checkbox states
-	for _, data in ipairs(frame.checkboxes) do
-		data.checkbox:SetChecked(self:GetOption(data.option, data.default))
+	if frame.checkboxes then
+		for _, data in ipairs(frame.checkboxes) do
+			data.checkbox:SetChecked(self:GetOption(data.option, data.default))
+		end
 	end
 	
 	frame:Show()
