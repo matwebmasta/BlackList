@@ -562,6 +562,8 @@ function BlackList:ToggleOption(optionName, value)
 		BlackListOptions = {};
 	end
 	BlackListOptions[optionName] = value;
+	-- Debug output
+	DEFAULT_CHAT_FRAME:AddMessage("BlackList: Set " .. optionName .. " = " .. tostring(value), 1, 1, 0);
 end
 
 function BlackList:GetOption(optionName, defaultValue)
