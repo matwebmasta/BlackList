@@ -212,7 +212,6 @@ function BlackList:ShowNewOptions()
 	
 	frame:Show()
 end
-end
 
 -- Hook into BlackList UI functions like pfUI hooks into Blizzard functions
 local originalShowOptions = nil
@@ -269,13 +268,51 @@ BINDING_NAME_TOGGLE_BLACKLIST	= "Toggle BlackList";
 -- Inserts all of the UI elements
 function BlackList:InsertUI()
 
-	-- Add tab buttons to Friends tab
-	CreateFrame("Button", "FriendFrameToggleTab3", getglobal("FriendsListFrame"), "FriendsFrameToggleTab3");
-	CreateFrame("Button", "IgnoreFrameToggleTab3", getglobal("IgnoreListFrame"), "IgnoreFrameToggleTab3");
+	-- Add tab buttons to Friends tab (create programmatically instead of using XML templates)
+	local friendsTab = CreateFrame("Button", "FriendFrameToggleTab3", FriendsListFrame, "TabButtonTemplate")
+	friendsTab:SetText("BLACKLIST")
+	friendsTab:SetID(3)
+	friendsTab:SetPoint("LEFT", FriendsFrameToggleTab2, "RIGHT", -15, 0)
+	friendsTab:SetScript("OnClick", function()
+		FriendsFrame_ShowSubFrame("BlackListFrame")
+	end)
+	
+	local ignoreTab = CreateFrame("Button", "IgnoreFrameToggleTab3", IgnoreListFrame, "TabButtonTemplate")
+	ignoreTab:SetText("BLACKLIST")
+	ignoreTab:SetID(3)
+	ignoreTab:SetPoint("LEFT", IgnoreFrameToggleTab2, "RIGHT", -15, 0)
+	ignoreTab:SetScript("OnClick", function()
+		FriendsFrame_ShowSubFrame("BlackListFrame")
+	end)
 	
 	-- Add the tab itself
-	table.insert(FRIENDSFRAME_SUBFRAMES, "BlackListFrame");
-	CreateFrame("Frame", "BlackListFrame", getglobal("FriendsFrame"), "BlackListFrame");
+	table.insert(FRIENDSFRAME_SUBFRAMES, "BlackListFrame")
+	local blackListFrame = CreateFrame("Frame", "BlackListFrame", FriendsFrame)
+	blackListFrame:SetAllPoints(FriendsFrame)
+	blackListFrame:Hide()
+	
+	-- Add basic content to the BlackList frame
+	local titleText = blackListFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+	titleText:SetPoint("TOPLEFT", 20, -20)
+	titleText:SetText("BlackList")
+	
+	-- Options button
+	local optionsBtn = CreateFrame("Button", "BlackListOptionsButton", blackListFrame, "UIPanelButtonTemplate")
+	optionsBtn:SetSize(80, 22)
+	optionsBtn:SetPoint("TOPRIGHT", -20, -20)
+	optionsBtn:SetText("Options")
+	optionsBtn:SetScript("OnClick", function()
+		BlackList:ShowOptions()
+	end)
+	
+	-- Add Player button  
+	local addBtn = CreateFrame("Button", "BlackListAddButton", blackListFrame, "UIPanelButtonTemplate")
+	addBtn:SetSize(100, 22)
+	addBtn:SetPoint("TOPRIGHT", optionsBtn, "TOPLEFT", -5, 0)
+	addBtn:SetText("BlackList Player")
+	addBtn:SetScript("OnClick", function()
+		StaticPopup_Show("BLACKLIST_PLAYER")
+	end)
 
 	-- Create name prompt
 	StaticPopupDialogs["BLACKLIST_PLAYER"] = {
