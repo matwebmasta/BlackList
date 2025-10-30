@@ -562,6 +562,13 @@ function BlackList:ToggleOption(optionName, value)
 		BlackListOptions = {};
 	end
 	BlackListOptions[optionName] = value;
+	
+	-- Clear warning cache when whisper options change
+	if optionName == "preventWhispers" or optionName == "warnWhispers" then
+		Already_Warned_For["WHISPER"] = {};
+		DEFAULT_CHAT_FRAME:AddMessage("BlackList: Cleared whisper warning cache", 1, 1, 0);
+	end
+	
 	-- Debug output
 	DEFAULT_CHAT_FRAME:AddMessage("BlackList: Set " .. optionName .. " = " .. tostring(value), 1, 1, 0);
 end
