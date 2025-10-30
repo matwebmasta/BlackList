@@ -72,17 +72,7 @@ function BlackList_ChatFrame_OnEvent(event)
 		if (BlackList:GetIndexByName(name) > 0) then
 			local player = BlackList:GetPlayerByIndex(BlackList:GetIndexByName(name));
 			
-			-- Check if we should block whispers
-			if (BlackList:GetOption("preventWhispers", true)) then
-				-- Send auto-reply
-				if (name ~= UnitName("player")) then
-					SendChatMessage(PLAYER_IGNORING, "WHISPER", nil, name);
-				end
-				-- Block the whisper by not calling the original handler
-				return;
-			end
-			
-			-- Check if we should warn about whispers
+			-- Always warn about whispers from blacklisted players (if enabled)
 			if (BlackList:GetOption("warnWhispers", true)) then
 				local alreadywarned = false;
 				
@@ -97,10 +87,20 @@ function BlackList_ChatFrame_OnEvent(event)
 					BlackList:AddMessage("BlackList: " .. name .. " is blacklisted and whispered you.", "yellow");
 				end
 			end
+			
+			-- Check if we should block whispers
+			if (BlackList:GetOption("preventWhispers", true)) then
+				-- Block the whisper by not calling the original handler (no auto-reply)
+				return;
+			end
+			
+			-- If not blocking, call the original handler to display the whisper
+			Orig_ChatFrame_OnEvent(event);
+			return;
 		end
 	end
 	
-	-- Call the original handler
+	-- Call the original handler for non-blacklisted messages
 	Orig_ChatFrame_OnEvent(event);
 end
 
