@@ -21,6 +21,7 @@ function BlackList:OnLoad()
 	self:RegisterEvents();
 	self:HookFunctions();
 	self:RegisterSlashCmds();
+	self:HookBlizzardTabs();
 
 	-- Disable share list button if it exists
 	if FriendsFrameShareListButton then
@@ -50,7 +51,7 @@ end
 local Orig_ChatFrame_OnEvent;
 local Orig_InviteByName;
 local Orig_FriendsFrame_ShowSubFrame;
-local BlackList_AllowTabSwitch = true;
+local BlackList_UserClickedTab = false;
 
 -- Hooks onto the functions needed
 function BlackList:HookFunctions()
@@ -67,6 +68,29 @@ function BlackList:HookFunctions()
 	
 	DEFAULT_CHAT_FRAME:AddMessage("BlackList: Hooks installed", 0, 1, 0);
 
+end
+
+-- Hook Blizzard's Friends and Ignore tabs to set flag
+function BlackList:HookBlizzardTabs()
+	-- Hook Friends tab click
+	if FriendsFrameTab1 and FriendsFrameTab1:GetScript("OnClick") then
+		local origOnClick = FriendsFrameTab1:GetScript("OnClick");
+		FriendsFrameTab1:SetScript("OnClick", function()
+			BlackList_UserClickedTab = true;
+			origOnClick();
+		end);
+	end
+	
+	-- Hook Ignore tab click
+	if FriendsFrameTab2 and FriendsFrameTab2:GetScript("OnClick") then
+		local origOnClick = FriendsFrameTab2:GetScript("OnClick");
+		FriendsFrameTab2:SetScript("OnClick", function()
+			BlackList_UserClickedTab = true;
+			origOnClick();
+		end);
+	end
+	
+	DEFAULT_CHAT_FRAME:AddMessage("BlackList: Hooked Blizzard tabs", 0, 1, 0);
 end
 
 -- Hooked ChatFrame_OnEvent function (like SuperIgnore does)
@@ -183,15 +207,26 @@ function BlackList_InviteByName(name)
 
 end
 
--- Hooked FriendsFrame_ShowSubFrame to prevent automatic tab switching
+-- Hooked FriendsFrame_ShowSubFrame to preserve BlackList tab
 function BlackList_FriendsFrame_ShowSubFrame(frameName)
-	-- If we're on BlackList and this isn't an allowed switch, stay on BlackList
-	if BlackListFrame and BlackListFrame:IsVisible() and not BlackList_AllowTabSwitch then
-		-- Don't switch away from BlackList
+	-- If trying to show BlackListFrame, always allow it
+	if frameName == "BlackListFrame" then
+		Orig_FriendsFrame_ShowSubFrame(frameName);
 		return;
 	end
 	
-	-- Otherwise, allow the switch
+	-- If we're currently on BlackList and trying to switch away
+	if BlackListFrame and BlackListFrame:IsVisible() then
+		-- Only allow if user clicked a tab
+		if BlackList_UserClickedTab then
+			BlackList_UserClickedTab = false;  -- Reset flag
+			Orig_FriendsFrame_ShowSubFrame(frameName);
+		end
+		-- Otherwise block the switch (it's an automatic update)
+		return;
+	end
+	
+	-- Not on BlackList, allow the switch
 	Orig_FriendsFrame_ShowSubFrame(frameName);
 end
 

@@ -433,9 +433,6 @@ end
 
 function BlackList:ShowTab()
 
-	-- Allow this tab switch since it was triggered by user action
-	BlackList_AllowTabSwitch = true;
-	
 	FriendsFrameTopLeft:SetTexture("Interface\\PaperDollInfoFrame\\UI-Character-General-TopLeft");
 	FriendsFrameTopRight:SetTexture("Interface\\PaperDollInfoFrame\\UI-Character-General-TopRight");
 	FriendsFrameBottomLeft:SetTexture("Interface\\FriendsFrame\\UI-FriendsFrame-BotLeft");
@@ -443,9 +440,6 @@ function BlackList:ShowTab()
 	FriendsFrameTitleText:SetText("Black List");
 	FriendsFrame_ShowSubFrame("BlackListFrame");
 	self:UpdateUI();
-	
-	-- Reset flag after a brief delay to block automatic switches
-	BlackList_AllowTabSwitch = false;
 
 end
 

@@ -16,7 +16,6 @@
 				PanelTemplates_DeselectTab(this);
 			</OnShow>
 			<OnClick>
-				BlackList_AllowTabSwitch = true;
 				BlackList:ShowTab();
 			</OnClick>
 		</Scripts>
@@ -35,7 +34,6 @@
 				PanelTemplates_DeselectTab(this);
 			</OnShow>
 			<OnClick>
-				BlackList_AllowTabSwitch = true;
 				BlackList:ShowTab();
 			</OnClick>
 		</Scripts>
@@ -86,7 +84,6 @@
 						PanelTemplates_DeselectTab(this);
 					</OnShow>
 					<OnClick>
-						BlackList_AllowTabSwitch = true;
 						FriendsFrame.showFriendsList = 1;
 						BlackList:ShowTab();
 					</OnClick>
@@ -105,7 +102,6 @@
 						PanelTemplates_DeselectTab(this);
 					</OnShow>
 					<OnClick>
-						BlackList_AllowTabSwitch = true;
 						FriendsFrame.showFriendsList = nil;
 						BlackList:ShowTab();
 					</OnClick>
