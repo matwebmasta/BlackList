@@ -44,17 +44,44 @@ local function StyleBlackListFrames()
 	if FriendFrameToggleTab3 and not FriendFrameToggleTab3.pfuiStyled then
 		pfUI.api.SkinTab(FriendFrameToggleTab3)
 		FriendFrameToggleTab3.pfuiStyled = true
+		DEFAULT_CHAT_FRAME:AddMessage("BlackList: Styled FriendFrameToggleTab3")
 	end
 	
 	if IgnoreFrameToggleTab3 and not IgnoreFrameToggleTab3.pfuiStyled then
 		pfUI.api.SkinTab(IgnoreFrameToggleTab3)
 		IgnoreFrameToggleTab3.pfuiStyled = true
+		DEFAULT_CHAT_FRAME:AddMessage("BlackList: Styled IgnoreFrameToggleTab3")
 	end
 	
 	if BlackListFrameToggleTab3 and not BlackListFrameToggleTab3.pfuiStyled then
 		pfUI.api.SkinTab(BlackListFrameToggleTab3)
 		BlackListFrameToggleTab3.pfuiStyled = true
+		DEFAULT_CHAT_FRAME:AddMessage("BlackList: Styled BlackListFrameToggleTab3")
 	end
+end
+
+-- Delayed styling function to ensure pfUI and tabs are ready
+local function DelayedStyleTabs()
+	local attempts = 0
+	local maxAttempts = 10
+	
+	local styler = CreateFrame("Frame")
+	styler:SetScript("OnUpdate", function()
+		attempts = attempts + 1
+		
+		if IsPfUIActive() and (FriendFrameToggleTab3 or IgnoreFrameToggleTab3 or BlackListFrameToggleTab3) then
+			StyleBlackListFrames()
+			this:SetScript("OnUpdate", nil) -- Stop trying once successful
+			DEFAULT_CHAT_FRAME:AddMessage("BlackList: pfUI integration complete")
+		elseif attempts >= maxAttempts then
+			this:SetScript("OnUpdate", nil) -- Give up after max attempts
+			if not IsPfUIActive() then
+				DEFAULT_CHAT_FRAME:AddMessage("BlackList: pfUI not detected, using standard styling")
+			else
+				DEFAULT_CHAT_FRAME:AddMessage("BlackList: Could not find tabs to style")
+			end
+		end
+	end)
 end
 
 -- SuperIgnore-style Options System
@@ -286,8 +313,8 @@ function BlackList:InsertUI()
 	table.insert(FRIENDSFRAME_SUBFRAMES, "BlackListFrame");
 	CreateFrame("Frame", "BlackListFrame", getglobal("FriendsFrame"), "BlackListFrame");
 	
-	-- Apply pfUI styling to tabs immediately after creation
-	StyleBlackListFrames();
+	-- Apply pfUI styling with delay to ensure pfUI and tabs are loaded
+	DelayedStyleTabs();
 
 	-- Create name prompt
 	StaticPopupDialogs["BLACKLIST_PLAYER"] = {
