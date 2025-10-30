@@ -182,19 +182,15 @@ end
 
 -- Hooked FriendsFrame_Update function
 function BlackList_FriendsFrame_Update()
-	-- If BlackList tab is showing, don't let FriendsFrame_Update change tabs
-	if BlackListFrame and BlackListFrame:IsVisible() then
-		-- Store the current subframe state
-		local wasBlackList = true;
-		-- Temporarily set to show ignore list so Update doesn't switch to friends
-		FriendsFrame.showFriendsList = nil;
-		-- Call original update
-		Orig_FriendsFrame_Update();
-		-- Restore BlackList frame
+	-- If BlackList tab is showing, preserve it after the update
+	local wasOnBlackList = (BlackListFrame and BlackListFrame:IsVisible());
+	
+	-- Call original update
+	Orig_FriendsFrame_Update();
+	
+	-- If we were on BlackList and update switched us away, switch back
+	if wasOnBlackList and not BlackListFrame:IsVisible() then
 		FriendsFrame_ShowSubFrame("BlackListFrame");
-	else
-		-- Not on BlackList tab, just call original
-		Orig_FriendsFrame_Update();
 	end
 end
 
