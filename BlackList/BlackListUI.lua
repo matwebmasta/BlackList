@@ -270,17 +270,19 @@ function BlackList:InsertUI()
 
 	-- Add tab buttons to Friends tab (create programmatically instead of using XML templates)
 	local friendsTab = CreateFrame("Button", "FriendFrameToggleTab3", FriendsListFrame, "TabButtonTemplate")
-	friendsTab:SetText("BLACKLIST")
+	friendsTab:SetText("BLACK")
 	friendsTab:SetID(3)
-	friendsTab:SetPoint("LEFT", FriendsFrameToggleTab2, "RIGHT", -15, 0)
+	-- Position after the Ignore tab with minimal spacing
+	friendsTab:SetPoint("LEFT", FriendsFrameToggleTab2, "RIGHT", -5, 0)
 	friendsTab:SetScript("OnClick", function()
 		FriendsFrame_ShowSubFrame("BlackListFrame")
 	end)
 	
 	local ignoreTab = CreateFrame("Button", "IgnoreFrameToggleTab3", IgnoreListFrame, "TabButtonTemplate")
-	ignoreTab:SetText("BLACKLIST")
+	ignoreTab:SetText("BLACK")
 	ignoreTab:SetID(3)
-	ignoreTab:SetPoint("LEFT", IgnoreFrameToggleTab2, "RIGHT", -15, 0)
+	-- Position after the Friends tab with minimal spacing
+	ignoreTab:SetPoint("LEFT", IgnoreFrameToggleTab2, "RIGHT", -5, 0)
 	ignoreTab:SetScript("OnClick", function()
 		FriendsFrame_ShowSubFrame("BlackListFrame")
 	end)
@@ -298,7 +300,8 @@ function BlackList:InsertUI()
 	
 	-- Options button
 	local optionsBtn = CreateFrame("Button", "BlackListOptionsButton", blackListFrame, "UIPanelButtonTemplate")
-	optionsBtn:SetSize(80, 22)
+	optionsBtn:SetWidth(80)
+	optionsBtn:SetHeight(22)
 	optionsBtn:SetPoint("TOPRIGHT", -20, -20)
 	optionsBtn:SetText("Options")
 	optionsBtn:SetScript("OnClick", function()
@@ -307,7 +310,8 @@ function BlackList:InsertUI()
 	
 	-- Add Player button  
 	local addBtn = CreateFrame("Button", "BlackListAddButton", blackListFrame, "UIPanelButtonTemplate")
-	addBtn:SetSize(100, 22)
+	addBtn:SetWidth(100)
+	addBtn:SetHeight(22)
 	addBtn:SetPoint("TOPRIGHT", optionsBtn, "TOPLEFT", -5, 0)
 	addBtn:SetText("BlackList Player")
 	addBtn:SetScript("OnClick", function()
