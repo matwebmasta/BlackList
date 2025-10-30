@@ -201,13 +201,8 @@ local function CreateBlackListCloseButton(frame)
 	
 	-- Apply pfUI styling if available
 	if IsPfUIActive() and pfUI.api.SkinCloseButton then
-		-- Position relative to backdrop if pfUI is active
-		if frame.backdrop then
-			closeBtn:SetPoint("TOPRIGHT", frame.backdrop, "TOPRIGHT", -5, -5)
-		else
-			closeBtn:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -5, -5)
-		end
-		pfUI.api.SkinCloseButton(closeBtn, frame)
+		-- pfUI uses -6, -6 offset for close buttons
+		pfUI.api.SkinCloseButton(closeBtn, frame.backdrop or frame, -6, -6)
 	else
 		closeBtn:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -5, -5)
 	end
