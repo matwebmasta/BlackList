@@ -49,7 +49,6 @@ end
 
 local Orig_ChatFrame_OnEvent;
 local Orig_InviteByName;
-local Orig_FriendsFrame_Update;
 -- Hooks onto the functions needed
 function BlackList:HookFunctions()
 
@@ -58,9 +57,6 @@ function BlackList:HookFunctions()
 
 	Orig_InviteByName = InviteByName;
 	InviteByName = BlackList_InviteByName;
-	
-	Orig_FriendsFrame_Update = FriendsFrame_Update;
-	FriendsFrame_Update = BlackList_FriendsFrame_Update;
 	
 	DEFAULT_CHAT_FRAME:AddMessage("BlackList: Hooks installed", 0, 1, 0);
 
@@ -178,20 +174,6 @@ function BlackList_InviteByName(name)
 
 	Orig_InviteByName(name);
 
-end
-
--- Hooked FriendsFrame_Update function
-function BlackList_FriendsFrame_Update()
-	-- If BlackList tab is showing, preserve it after the update
-	local wasOnBlackList = (BlackListFrame and BlackListFrame:IsVisible());
-	
-	-- Call original update
-	Orig_FriendsFrame_Update();
-	
-	-- If we were on BlackList and update switched us away, switch back
-	if wasOnBlackList and not BlackListFrame:IsVisible() then
-		FriendsFrame_ShowSubFrame("BlackListFrame");
-	end
 end
 
 -- Registers slash cmds

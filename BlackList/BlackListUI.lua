@@ -438,10 +438,6 @@ function BlackList:ShowTab()
 	FriendsFrameBottomLeft:SetTexture("Interface\\FriendsFrame\\UI-FriendsFrame-BotLeft");
 	FriendsFrameBottomRight:SetTexture("Interface\\FriendsFrame\\UI-FriendsFrame-BotRight");
 	FriendsFrameTitleText:SetText("Black List");
-	
-	-- Set flag so FriendsFrame_Update knows we're on BlackList (use nil like Ignore tab)
-	FriendsFrame.showFriendsList = nil;
-	
 	FriendsFrame_ShowSubFrame("BlackListFrame");
 	self:UpdateUI();
 
