@@ -1,9 +1,59 @@
+--[[
+	BlackList UI - pfUI Integration
+	
+	This addon now supports visual integration with pfUI when it's active.
+	When pfUI is detected, the BlackList frames will use pfUI's modern styling
+	for consistency with the enhanced UI. When pfUI is not present, the addon
+	falls back to standard Classic WoW styling.
+	
+	Integration features:
+	- Automatic pfUI backdrop styling for main frames
+	- pfUI checkbox styling for options
+	- pfUI button styling where applicable
+	- Maintains full compatibility without pfUI
+--]]
+
 local SelectedIndex = 1;
 BLACKLISTS_TO_DISPLAY = 18;
 FRIENDS_FRAME_BLACKLIST_HEIGHT = 16;
 
 Classes = {"", "Druid", "Hunter", "Mage", "Paladin", "Priest", "Rogue", "Shaman", "Warlock", "Warrior"};
 Races = {"", "Human", "Dwarf", "Night Elf", "Gnome", "Draenei", "Orc", "Undead", "Tauren", "Troll", "Blood Elf"};
+
+-- pfUI Integration
+local function IsPfUIActive()
+	return pfUI and pfUI.api and pfUI.api.CreateBackdrop
+end
+
+function BlackList:ApplyPfUIStyle(frame)
+	if IsPfUIActive() then
+		-- Apply pfUI styling when available
+		pfUI.api.CreateBackdrop(frame, nil, true)
+		if frame.backdrop then
+			frame.backdrop:SetFrameLevel(frame:GetFrameLevel())
+		end
+		
+		-- Style buttons if pfUI has button styling
+		if pfUI.api.SkinButton then
+			local children = {frame:GetChildren()}
+			for _, child in ipairs(children) do
+				if child:GetObjectType() == "Button" and not child.pfuiStyled then
+					pfUI.api.SkinButton(child)
+					child.pfuiStyled = true
+				end
+			end
+		end
+	else
+		-- Fallback to standard Classic styling
+		frame:SetBackdrop({
+			bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+			edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+			tile = true, tileSize = 32, edgeSize = 32,
+			insets = { left = 11, right = 12, top = 12, bottom = 11 }
+		})
+		frame:SetBackdropColor(0, 0, 0, 1)
+	end
+end
 
 -- Phrase variables
 PLAYER_IGNORING 			= "Player is ignoring you.";
@@ -235,4 +285,19 @@ function BlackList:UpdateOptionsUI()
 	getglobal("BlackListOptionsCheckButton5"):SetChecked(self:GetOption("preventInvites", true));
 	getglobal("BlackListOptionsCheckButton6"):SetChecked(self:GetOption("preventMyInvites", false));
 	getglobal("BlackListOptionsCheckButton7"):SetChecked(self:GetOption("warnPartyJoin", true));
+	
+	-- Apply pfUI styling to checkboxes if available
+	self:StyleOptionsCheckboxes();
+end
+
+function BlackList:StyleOptionsCheckboxes()
+	if IsPfUIActive() and pfUI.api.SkinCheckBox then
+		for i = 1, 7 do
+			local checkbox = getglobal("BlackListOptionsCheckButton" .. i);
+			if checkbox and not checkbox.pfuiStyled then
+				pfUI.api.SkinCheckBox(checkbox);
+				checkbox.pfuiStyled = true;
+			end
+		end
+	end
 end
