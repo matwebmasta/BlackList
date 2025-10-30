@@ -694,36 +694,28 @@ function BlackList:ShowStandaloneDetails()
 		reasonLabel:SetPoint("TOPLEFT", dateText, "BOTTOMLEFT", 0, -15)
 		reasonLabel:SetText("Reason:")
 		
-		-- Reason scroll frame for multiline text
-		local reasonScrollFrame = CreateFrame("ScrollFrame", "BlackListStandaloneDetails_ReasonScrollFrame", detailsFrame, "UIPanelScrollFrameTemplate")
-		reasonScrollFrame:SetPoint("TOPLEFT", reasonLabel, "BOTTOMLEFT", 0, -10)
-		reasonScrollFrame:SetPoint("BOTTOMRIGHT", detailsFrame, "BOTTOMRIGHT", -30, 20)
+		-- Reason text box (scrollable multiline)
+		local reasonBox = CreateFrame("ScrollFrame", "BlackListStandaloneDetails_ReasonScroll", detailsFrame, "UIPanelScrollFrameTemplate")
+		reasonBox:SetPoint("TOPLEFT", reasonLabel, "BOTTOMLEFT", 0, -10)
+		reasonBox:SetPoint("BOTTOMRIGHT", detailsFrame, "BOTTOMRIGHT", -30, 15)
 		
-		-- Backdrop for scroll frame
-		reasonScrollFrame:SetBackdrop({
+		-- Backdrop for reason box
+		reasonBox:SetBackdrop({
 			bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
 			edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
 			tile = true, tileSize = 16, edgeSize = 16,
 			insets = {left = 4, right = 4, top = 4, bottom = 4}
 		})
-		reasonScrollFrame:SetBackdropColor(0, 0, 0, 0.5)
+		reasonBox:SetBackdropColor(0, 0, 0, 0.5)
 		
-		-- Reason text box (multiline)
-		local reasonText = CreateFrame("EditBox", "BlackListStandaloneDetails_ReasonText", reasonScrollFrame)
+		local reasonText = CreateFrame("EditBox", "BlackListStandaloneDetails_ReasonText", reasonBox)
+		reasonText:SetWidth(240)
+		reasonText:SetHeight(100)
 		reasonText:SetMultiLine(true)
 		reasonText:SetAutoFocus(false)
 		reasonText:SetFontObject(GameFontHighlight)
-		reasonText:SetWidth(reasonScrollFrame:GetWidth() - 20)
-		reasonText:SetMaxLetters(0)
-		reasonText:EnableMouse(true)
-		reasonText:EnableKeyboard(true)
-		reasonScrollFrame:SetScrollChild(reasonText)
-		
-		-- Make sure text is visible and editable
-		reasonText:SetScript("OnCursorChanged", function()
-			local _, max = reasonScrollFrame:GetVerticalScrollRange()
-			reasonScrollFrame:UpdateScrollChildRect()
-		end)
+		reasonText:SetTextInsets(5, 5, 5, 5)
+		reasonBox:SetScrollChild(reasonText)
 		
 		-- Function to save reason
 		local function SaveReason()
