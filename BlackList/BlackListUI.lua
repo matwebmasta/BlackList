@@ -40,17 +40,27 @@ local function StyleBlackListFrames()
 		BlackListDetailsFrame.pfuiStyled = true
 	end
 	
+	-- Get pfUI's border size for consistent tab spacing (same calculation pfUI uses)
+	local border = tonumber(pfUI_config and pfUI_config.appearance and pfUI_config.appearance.border and pfUI_config.appearance.border.default) or 1
+	local tabSpacing = border * 2 + 1
+	
 	-- Style ALL the BlackList tabs to match pfUI tabs
 	if FriendFrameToggleTab3 and not FriendFrameToggleTab3.pfuiStyled then
 		pfUI.api.SkinTab(FriendFrameToggleTab3)
+		-- Reposition with pfUI's spacing calculation
+		FriendFrameToggleTab3:ClearAllPoints()
+		FriendFrameToggleTab3:SetPoint("LEFT", FriendsFrameToggleTab2, "RIGHT", tabSpacing, 0)
 		FriendFrameToggleTab3.pfuiStyled = true
-		DEFAULT_CHAT_FRAME:AddMessage("BlackList: Styled FriendFrameToggleTab3")
+		DEFAULT_CHAT_FRAME:AddMessage("BlackList: Styled FriendFrameToggleTab3 with spacing=" .. tabSpacing)
 	end
 	
 	if IgnoreFrameToggleTab3 and not IgnoreFrameToggleTab3.pfuiStyled then
 		pfUI.api.SkinTab(IgnoreFrameToggleTab3)
+		-- Reposition with pfUI's spacing calculation
+		IgnoreFrameToggleTab3:ClearAllPoints()
+		IgnoreFrameToggleTab3:SetPoint("LEFT", IgnoreFrameToggleTab2, "RIGHT", tabSpacing, 0)
 		IgnoreFrameToggleTab3.pfuiStyled = true
-		DEFAULT_CHAT_FRAME:AddMessage("BlackList: Styled IgnoreFrameToggleTab3")
+		DEFAULT_CHAT_FRAME:AddMessage("BlackList: Styled IgnoreFrameToggleTab3 with spacing=" .. tabSpacing)
 	end
 	
 	if BlackListFrameToggleTab3 and not BlackListFrameToggleTab3.pfuiStyled then
