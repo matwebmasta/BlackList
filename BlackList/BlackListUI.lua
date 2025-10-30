@@ -40,9 +40,17 @@ local function StyleBlackListFrames()
 		BlackListDetailsFrame.pfuiStyled = true
 	end
 	
-	-- Get pfUI's border size for consistent tab spacing (same calculation pfUI uses)
-	local border = tonumber(pfUI_config and pfUI_config.appearance and pfUI_config.appearance.border and pfUI_config.appearance.border.default) or 1
+	-- Get pfUI's border size for consistent tab spacing (using pfUI's GetBorderSize function)
+	local rawborder, border = 1, 1
+	if pfUI.api.GetBorderSize then
+		rawborder, border = pfUI.api.GetBorderSize()
+	end
 	local tabSpacing = border * 2 + 1
+	
+	-- If spacing is too small, use a minimum value that looks good
+	if tabSpacing < 5 then
+		tabSpacing = 6  -- Reasonable default that matches pfUI's visual style
+	end
 	
 	-- Style ALL the BlackList tabs to match pfUI tabs
 	if FriendFrameToggleTab3 and not FriendFrameToggleTab3.pfuiStyled then
