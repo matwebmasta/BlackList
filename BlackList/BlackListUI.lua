@@ -147,12 +147,7 @@ local function CreateBlackListFrame(name, width, parent, x, y)
 		edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
 		insets = {left = 11, right = 12, top = 12, bottom = 11},
 	})
-	f:SetPoint("CENTER", UIParent, "CENTER", x or 0, y or 0)
-	f:SetMovable(true)
 	f:EnableMouse(true)
-	f:RegisterForDrag("LeftButton")
-	f:SetScript("OnDragStart", function() this:StartMoving() end)
-	f:SetScript("OnDragStop", function() this:StopMovingOrSizing() end)
 	f:Hide()
 	
 	-- Apply pfUI styling if available
@@ -194,6 +189,9 @@ local function CreateBlackListOption(frame, name, desc, pad, onclick)
 	ct:SetFont("Fonts\\FRIZQT__.TTF", 11)
 	ct:SetTextColor(1, 1, 1)  -- White text
 	ct:SetText(desc)
+	ct:SetWidth(240)  -- Set max width for text wrapping
+	ct:SetJustifyH("LEFT")
+	ct:SetWordWrap(true)
 	
 	return c, ct
 end
@@ -241,7 +239,7 @@ local function CreateNewOptionsFrame()
 	local warnTarget, warnTargetText = CreateBlackListOption(f, "BL_WarnTarget", "Warn when targeting blacklisted players", pad, function(checked)
 		BlackList:ToggleOption("warnTarget", checked)
 	end)
-	pad = pad - 35
+	pad = pad - 45  -- Extra space for wrapped text
 	
 	-- Communication Section
 	CreateBlackListHeader(f, "Communication", 12, pad)
@@ -250,12 +248,12 @@ local function CreateNewOptionsFrame()
 	local preventWhispers, preventWhispersText = CreateBlackListOption(f, "BL_PreventWhispers", "Prevent whispers from blacklisted players", pad, function(checked)
 		BlackList:ToggleOption("preventWhispers", checked)
 	end)
-	pad = pad - 25
+	pad = pad - 45  -- Extra space for wrapped text
 	
 	local warnWhispers, warnWhispersText = CreateBlackListOption(f, "BL_WarnWhispers", "Warn when blacklisted players whisper you", pad, function(checked)
 		BlackList:ToggleOption("warnWhispers", checked)
 	end)
-	pad = pad - 35
+	pad = pad - 45  -- Extra space for wrapped text
 	
 	-- Group Management Section
 	CreateBlackListHeader(f, "Group Management", 12, pad)
@@ -264,12 +262,12 @@ local function CreateNewOptionsFrame()
 	local preventInvites, preventInvitesText = CreateBlackListOption(f, "BL_PreventInvites", "Prevent blacklisted players from inviting you", pad, function(checked)
 		BlackList:ToggleOption("preventInvites", checked)
 	end)
-	pad = pad - 25
+	pad = pad - 45  -- Extra space for wrapped text
 	
 	local preventMyInvites, preventMyInvitesText = CreateBlackListOption(f, "BL_PreventMyInvites", "Prevent yourself from inviting blacklisted players", pad, function(checked)
 		BlackList:ToggleOption("preventMyInvites", checked)
 	end)
-	pad = pad - 25
+	pad = pad - 45  -- Extra space for wrapped text
 	
 	local warnPartyJoin, warnPartyJoinText = CreateBlackListOption(f, "BL_WarnPartyJoin", "Warn when blacklisted players join your party", pad, function(checked)
 		BlackList:ToggleOption("warnPartyJoin", checked)
@@ -291,6 +289,16 @@ end
 
 function BlackList:ShowNewOptions()
 	local frame = CreateNewOptionsFrame()
+	
+	-- Toggle behavior: if already shown, hide it
+	if frame:IsVisible() then
+		frame:Hide()
+		return
+	end
+	
+	-- Position relative to FriendsFrame (upper right corner with margin)
+	frame:ClearAllPoints()
+	frame:SetPoint("TOPLEFT", FriendsFrame, "TOPRIGHT", 10, 0)
 	
 	-- Update checkbox states
 	for _, data in ipairs(frame.checkboxes) do
