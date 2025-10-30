@@ -80,6 +80,9 @@ local function StyleBlackListFrames()
 	-- Style the BlackListFrame's own tabs (when viewing the BlackList tab)
 	if BlackListFrameToggleTab1 and not BlackListFrameToggleTab1.pfuiStyled then
 		pfUI.api.SkinTab(BlackListFrameToggleTab1)
+		-- Position it like pfUI does: anchor to scroll frame
+		BlackListFrameToggleTab1:ClearAllPoints()
+		BlackListFrameToggleTab1:SetPoint("BOTTOMLEFT", FriendsFrameBlackListScrollFrame, "TOPLEFT", 0, tabSpacing)
 		BlackListFrameToggleTab1.pfuiStyled = true
 	end
 	
