@@ -198,13 +198,21 @@ end
 
 local function CreateBlackListCloseButton(frame)
 	local closeBtn = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
-	closeBtn:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -5, -5)
-	closeBtn:SetScript("OnClick", function() frame:Hide() end)
 	
 	-- Apply pfUI styling if available
 	if IsPfUIActive() and pfUI.api.SkinCloseButton then
+		-- Position relative to backdrop if pfUI is active
+		if frame.backdrop then
+			closeBtn:SetPoint("TOPRIGHT", frame.backdrop, "TOPRIGHT", -5, -5)
+		else
+			closeBtn:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -5, -5)
+		end
 		pfUI.api.SkinCloseButton(closeBtn, frame)
+	else
+		closeBtn:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -5, -5)
 	end
+	
+	closeBtn:SetScript("OnClick", function() frame:Hide() end)
 	
 	return closeBtn
 end
@@ -273,8 +281,8 @@ local function CreateNewOptionsFrame()
 		BlackList:ToggleOption("warnPartyJoin", checked)
 	end)
 	
-	-- Adjust frame height to fit content compactly
-	f:SetHeight(math.abs(pad) + 20)
+	-- Adjust frame height to fit content compactly with bottom padding
+	f:SetHeight(math.abs(pad) + 35)
 	
 	-- Store references for updating
 	f.checkboxes = {
@@ -282,8 +290,8 @@ local function CreateNewOptionsFrame()
 		{checkbox = warnTarget, option = "warnTarget", default = true},
 		{checkbox = preventWhispers, option = "preventWhispers", default = true},
 		{checkbox = warnWhispers, option = "warnWhispers", default = true},
-		{checkbox = preventInvites, option = "preventInvites", default = true},
-		{checkbox = preventMyInvites, option = "preventMyInvites", default = false},
+		{checkbox = preventInvites, option = "preventInvites", default = false},  -- Off by default
+		{checkbox = preventMyInvites, option = "preventMyInvites", default = true},  -- On by default
 		{checkbox = warnPartyJoin, option = "warnPartyJoin", default = true}
 	}
 	
