@@ -1,5 +1,7 @@
 # BlackList
 
+*"You've disappointed me for the last time." - Wise raid leader*
+
 Enhanced for Turtle WoW (Classic 1.12)
 
 BlackList is a World of Warcraft addon that adds a comprehensive player management system to your Friends Tab on the Social Panel. Unlike the built-in Ignore system which has limits, BlackList lets you track unlimited players with detailed information, custom reasons, and flexible warning options.
