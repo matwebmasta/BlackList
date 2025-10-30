@@ -40,7 +40,17 @@ local function StyleBlackListFrames()
 		BlackListDetailsFrame.pfuiStyled = true
 	end
 	
-	-- Style the BlackList tab to match other tabs
+	-- Style ALL the BlackList tabs to match pfUI tabs
+	if FriendFrameToggleTab3 and not FriendFrameToggleTab3.pfuiStyled then
+		pfUI.api.SkinTab(FriendFrameToggleTab3)
+		FriendFrameToggleTab3.pfuiStyled = true
+	end
+	
+	if IgnoreFrameToggleTab3 and not IgnoreFrameToggleTab3.pfuiStyled then
+		pfUI.api.SkinTab(IgnoreFrameToggleTab3)
+		IgnoreFrameToggleTab3.pfuiStyled = true
+	end
+	
 	if BlackListFrameToggleTab3 and not BlackListFrameToggleTab3.pfuiStyled then
 		pfUI.api.SkinTab(BlackListFrameToggleTab3)
 		BlackListFrameToggleTab3.pfuiStyled = true
@@ -275,6 +285,9 @@ function BlackList:InsertUI()
 	-- Add the tab itself
 	table.insert(FRIENDSFRAME_SUBFRAMES, "BlackListFrame");
 	CreateFrame("Frame", "BlackListFrame", getglobal("FriendsFrame"), "BlackListFrame");
+	
+	-- Apply pfUI styling to tabs immediately after creation
+	StyleBlackListFrames();
 
 	-- Create name prompt
 	StaticPopupDialogs["BLACKLIST_PLAYER"] = {
