@@ -74,29 +74,31 @@ function BlackList_MessageEventHandler(event)
 				local name = arg2;
 				if (BlackList:GetIndexByName(name) > 0) then
 					local player = BlackList:GetPlayerByIndex(BlackList:GetIndexByName(name));
-					if (BlackList:GetOption("preventWhispers", true)) then
+					
+					-- Check if we should block whispers
+					if (type == "WHISPER" and BlackList:GetOption("preventWhispers", true)) then
 						-- respond to whisper
-						if (type == "WHISPER" and name ~= UnitName("player")) then
+						if (name ~= UnitName("player")) then
 							SendChatMessage(PLAYER_IGNORING, "WHISPER", nil, name);
 						end
 						-- block communication
 						return;
-					elseif (BlackList:GetOption("warnWhispers", true)) then
-						-- warn player
-						if (type == "WHISPER") then
-							local alreadywarned = false;
+					end
+					
+					-- Check if we should warn about whispers (independent of blocking)
+					if (type == "WHISPER" and BlackList:GetOption("warnWhispers", true)) then
+						local alreadywarned = false;
 
-							for key, warnedname in pairs(Already_Warned_For["WHISPER"]) do
-								if (name == warnedname) then
-									alreadywarned = true;
-								end
+						for key, warnedname in pairs(Already_Warned_For["WHISPER"]) do
+							if (name == warnedname) then
+								alreadywarned = true;
 							end
+						end
 
-							if (not alreadywarned) then
-								table.insert(Already_Warned_For["WHISPER"], name);
-								warnplayer = true;
-								warnname = name;
-							end
+						if (not alreadywarned) then
+							table.insert(Already_Warned_For["WHISPER"], name);
+							warnplayer = true;
+							warnname = name;
 						end
 					end
 				end
