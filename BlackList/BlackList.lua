@@ -72,11 +72,23 @@ function BlackList_MessageEventHandler(event)
 			if (type == channel) then
 				-- search for player name
 				local name = arg2;
+				
+				-- Debug: Check if we're detecting whispers from blacklisted players
+				if (type == "WHISPER") then
+					DEFAULT_CHAT_FRAME:AddMessage("BlackList DEBUG: Whisper from " .. name, 0.5, 0.5, 0.5);
+				end
+				
 				if (BlackList:GetIndexByName(name) > 0) then
 					local player = BlackList:GetPlayerByIndex(BlackList:GetIndexByName(name));
 					
+					-- Debug: Confirm player is blacklisted
+					if (type == "WHISPER") then
+						DEFAULT_CHAT_FRAME:AddMessage("BlackList DEBUG: " .. name .. " is blacklisted!", 0.5, 0.5, 0.5);
+					end
+					
 					-- Check if we should block whispers
 					if (type == "WHISPER" and BlackList:GetOption("preventWhispers", true)) then
+						DEFAULT_CHAT_FRAME:AddMessage("BlackList DEBUG: Blocking whisper from " .. name, 0.5, 0.5, 0.5);
 						-- respond to whisper
 						if (name ~= UnitName("player")) then
 							SendChatMessage(PLAYER_IGNORING, "WHISPER", nil, name);
@@ -99,6 +111,7 @@ function BlackList_MessageEventHandler(event)
 							table.insert(Already_Warned_For["WHISPER"], name);
 							warnplayer = true;
 							warnname = name;
+							DEFAULT_CHAT_FRAME:AddMessage("BlackList DEBUG: Setting up warning for " .. name, 0.5, 0.5, 0.5);
 						end
 					end
 				end
@@ -109,7 +122,7 @@ function BlackList_MessageEventHandler(event)
 	local returnvalue = Orig_ChatFrame_MessageEventHandler(event);
 
 	if (warnplayer) then
-		this:AddMessage(warnname .. " is on your blacklist", 1.0, 0.0, 0.0);
+		BlackList:AddMessage("BlackList: " .. warnname .. " is blacklisted and whispered you.", "yellow");
 	end
 
 	return returnvalue;
