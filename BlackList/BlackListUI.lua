@@ -296,19 +296,30 @@ end
 function BlackList:ShowNewOptions()
 	local frame = CreateNewOptionsFrame()
 	
+	-- Close details window if open
+	local detailsFrame = getglobal("BlackListStandaloneDetailsFrame")
+	if detailsFrame and detailsFrame:IsVisible() then
+		detailsFrame:Hide()
+	end
+	
 	-- Toggle behavior: if already shown, hide it
 	if frame:IsVisible() then
 		frame:Hide()
 		return
 	end
 	
-	-- Position relative to FriendsFrame (upper right corner with margin)
+	-- Position relative to BlackListStandaloneFrame or FriendsFrame
 	frame:ClearAllPoints()
-	-- If pfUI is active, position relative to the backdrop, otherwise use FriendsFrame
-	if IsPfUIActive() and FriendsFrame.backdrop then
+	local mainFrame = getglobal("BlackListStandaloneFrame")
+	if mainFrame and mainFrame:IsVisible() then
+		-- Position relative to standalone window
+		frame:SetPoint("TOPLEFT", mainFrame, "TOPRIGHT", 10, 0)
+	elseif IsPfUIActive() and FriendsFrame and FriendsFrame.backdrop then
 		frame:SetPoint("TOPLEFT", FriendsFrame.backdrop, "TOPRIGHT", 10, 0)
-	else
+	elseif FriendsFrame then
 		frame:SetPoint("TOPLEFT", FriendsFrame, "TOPRIGHT", 10, 0)
+	else
+		frame:SetPoint("CENTER", UIParent, "CENTER", 200, 0)
 	end
 	
 	-- Update checkbox states
@@ -411,17 +422,16 @@ function BlackList:CreateStandaloneWindow()
 	frame:SetClampedToScreen(true)
 	frame:Hide()
 	
-	-- Backdrop
-	frame:SetBackdrop({
-		bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
-		edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
-		tile = true, tileSize = 32, edgeSize = 32,
-		insets = {left = 11, right = 12, top = 12, bottom = 11}
-	})
-	
-	-- Apply pfUI styling if available
+	-- Apply pfUI styling if available, otherwise use default backdrop
 	if IsPfUIActive() then
 		pfUI.api.CreateBackdrop(frame, nil, true)
+	else
+		frame:SetBackdrop({
+			bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+			edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+			tile = true, tileSize = 32, edgeSize = 32,
+			insets = {left = 11, right = 12, top = 12, bottom = 11}
+		})
 	end
 	
 	-- Title
@@ -442,6 +452,14 @@ function BlackList:CreateStandaloneWindow()
 	scrollFrame:SetScript("OnVerticalScroll", function()
 		FauxScrollFrame_OnVerticalScroll(16, function() BlackList:UpdateStandaloneUI() end)
 	end)
+	
+	-- Apply pfUI styling to scrollbar if available
+	if IsPfUIActive() then
+		local scrollBar = getglobal("BlackListStandaloneScrollFrameScrollBar")
+		if scrollBar and pfUI.api.SkinScrollbar then
+			pfUI.api.SkinScrollbar(scrollBar)
+		end
+	end
 	
 	-- Create player list buttons (7 visible at a time)
 	for i = 1, 7 do
@@ -608,17 +626,16 @@ function BlackList:ShowStandaloneDetails()
 		detailsFrame:EnableMouse(true)
 		detailsFrame:SetClampedToScreen(true)
 		
-		-- Backdrop
-		detailsFrame:SetBackdrop({
-			bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
-			edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
-			tile = true, tileSize = 32, edgeSize = 32,
-			insets = {left = 11, right = 12, top = 12, bottom = 11}
-		})
-		
-		-- Apply pfUI styling if available
+		-- Apply pfUI styling if available, otherwise use default backdrop
 		if IsPfUIActive() then
 			pfUI.api.CreateBackdrop(detailsFrame, nil, true)
+		else
+			detailsFrame:SetBackdrop({
+				bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+				edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+				tile = true, tileSize = 32, edgeSize = 32,
+				insets = {left = 11, right = 12, top = 12, bottom = 11}
+			})
 		end
 		
 		-- Title
@@ -654,12 +671,24 @@ function BlackList:ShowStandaloneDetails()
 		reasonBox:SetPoint("BOTTOMRIGHT", detailsFrame, "BOTTOMRIGHT", -30, 15)
 		
 		local reasonText = CreateFrame("EditBox", "BlackListStandaloneDetails_ReasonText", reasonBox)
-		reasonText:SetWidth(250)
-		reasonText:SetHeight(80)
+		reasonText:SetWidth(240)
+		reasonText:SetHeight(100)
 		reasonText:SetMultiLine(true)
 		reasonText:SetAutoFocus(false)
 		reasonText:SetFontObject(GameFontHighlight)
+		reasonText:SetTextInsets(5, 5, 5, 5)  -- Add padding
 		reasonBox:SetScrollChild(reasonText)
+		
+		-- Save reason when focus is lost
+		reasonText:SetScript("OnEditFocusLost", function()
+			local index = BlackList:GetSelectedBlackList()
+			if index and index > 0 then
+				local player = BlackList:GetPlayerByIndex(index)
+				if player then
+					player["reason"] = this:GetText()
+				end
+			end
+		end)
 		
 		-- Backdrop for reason box
 		reasonBox:SetBackdrop({
@@ -669,6 +698,14 @@ function BlackList:ShowStandaloneDetails()
 			insets = {left = 4, right = 4, top = 4, bottom = 4}
 		})
 		reasonBox:SetBackdropColor(0, 0, 0, 0.5)
+		
+		-- Close details when Options is opened
+		detailsFrame:SetScript("OnShow", function()
+			local optionsFrame = getglobal("BlackListOptionsFrame_New")
+			if optionsFrame and optionsFrame:IsVisible() then
+				optionsFrame:Hide()
+			end
+		end)
 	end
 	
 	-- Update details
