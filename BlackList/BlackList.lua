@@ -119,9 +119,9 @@ end
 -- Hooked InviteByName function
 function BlackList_InviteByName(name)
 
-	if (BlackList:GetOption("preventMyInvites", false)) then
+	if (BlackList:GetOption("preventMyInvites", true)) then
 		if (BlackList:GetIndexByName(name) > 0) then
-			BlackList:AddErrorMessage(name .. " is on your blacklist - invite cancelled", "red", 5);
+			BlackList:AddMessage("BlackList: " .. name .. " is blacklisted, preventing you from inviting them.", "yellow");
 			return;
 		end
 	end
@@ -207,8 +207,7 @@ function BlackList:HandleEvent(event)
 					if (BlackList:GetOption("playSounds", true)) then
 						PlaySound("PVPTHROUGHQUEUE");
 					end
-					BlackList:AddErrorMessage(name .. " is on your blacklist", "red", 5);
-					BlackList:AddMessage(name .. " is on your blacklist for reason: " .. player["reason"], "yellow");
+					BlackList:AddMessage("BlackList: " .. name .. " is blacklisted - " .. player["reason"], "yellow");
 				end
 			end
 		end
@@ -218,10 +217,11 @@ function BlackList:HandleEvent(event)
 		if (BlackList:GetIndexByName(name) > 0) then
 			local player = BlackList:GetPlayerByIndex(BlackList:GetIndexByName(name));
 
-			if (BlackList:GetOption("preventInvites", true)) then
+			if (BlackList:GetOption("preventInvites", false)) then
 				-- decline party invite
 				DeclineGroup();
 				StaticPopup_Hide("PARTY_INVITE");
+				BlackList:AddMessage("BlackList: Declined party invite from blacklisted player " .. name .. ".", "yellow");
 			else
 				-- warn player
 				local alreadywarned = false;
@@ -234,7 +234,7 @@ function BlackList:HandleEvent(event)
 
 				if (not alreadywarned) then
 					table.insert(Already_Warned_For["PARTY_INVITE"], name);
-					BlackList:AddErrorMessage(name .. " is on your blacklist", "red", 10);
+					BlackList:AddMessage("BlackList: " .. name .. " is blacklisted and invited you to a party.", "yellow");
 				end
 			end
 		end
@@ -257,7 +257,7 @@ function BlackList:HandleEvent(event)
 
 					if (not alreadywarned) then
 						table.insert(Already_Warned_For["PARTY"], name);
-						BlackList:AddMessage(name .. " is on your blacklist", "red");
+						BlackList:AddMessage("BlackList: " .. name .. " is blacklisted and joined your party.", "yellow");
 					end
 				end
 			end
