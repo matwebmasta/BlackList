@@ -661,9 +661,7 @@
 			</OnHide>
 			<OnLoad>
 				-- Apply pfUI styling if available
-				if BlackList and BlackList.ApplyPfUIStyle then
-					BlackList.ApplyPfUIStyle(this);
-				end
+				InitializePfUIIntegration();
 			</OnLoad>
 		</Scripts>
 	</Frame>
@@ -857,10 +855,8 @@
 			<OnLoad>
 				this:SetMovable(true);
 				this:RegisterForDrag("LeftButton");
-				-- Apply pfUI styling if available
-				if BlackList and BlackList.ApplyPfUIStyle then
-					BlackList.ApplyPfUIStyle(this);
-				end
+				-- Initialize pfUI integration on frame load
+				InitializePfUIIntegration();
 			</OnLoad>
 			<OnDragStart>
 				this:StartMoving();

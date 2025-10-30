@@ -23,6 +23,11 @@ function BlackList:OnLoad()
 	self:RegisterSlashCmds();
 
 	FriendsFrameShareListButton:Disable();
+	
+	-- Initialize pfUI integration if available
+	if InitializePfUIIntegration then
+		InitializePfUIIntegration();
+	end
 
 end
 

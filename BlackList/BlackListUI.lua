@@ -2,14 +2,12 @@
 	BlackList UI - pfUI Integration
 	
 	This addon now supports visual integration with pfUI when it's active.
-	When pfUI is detected, the BlackList frames will use pfUI's modern styling
-	for consistency with the enhanced UI. When pfUI is not present, the addon
-	falls back to standard Classic WoW styling.
+	When pfUI is detected, BlackList uses the same styling approach as pfUI:
+	hooking into frame creation and applying consistent styling patterns.
 	
 	Integration features:
-	- Automatic pfUI backdrop styling for main frames
-	- pfUI checkbox styling for options
-	- pfUI button styling where applicable
+	- Hooks into BlackList frame initialization like pfUI does for Blizzard frames
+	- Uses pfUI's SkinTab, CreateBackdrop, and SkinButton functions
 	- Maintains full compatibility without pfUI
 --]]
 
@@ -20,40 +18,72 @@ FRIENDS_FRAME_BLACKLIST_HEIGHT = 16;
 Classes = {"", "Druid", "Hunter", "Mage", "Paladin", "Priest", "Rogue", "Shaman", "Warlock", "Warrior"};
 Races = {"", "Human", "Dwarf", "Night Elf", "Gnome", "Draenei", "Orc", "Undead", "Tauren", "Troll", "Blood Elf"};
 
--- pfUI Integration
+-- pfUI Integration - Modern approach using hooks like pfUI does
 local function IsPfUIActive()
 	return pfUI and pfUI.api and pfUI.api.CreateBackdrop
 end
 
-function BlackList:ApplyPfUIStyle(frame)
-	if IsPfUIActive() then
-		-- Apply pfUI styling when available
-		pfUI.api.CreateBackdrop(frame, nil, true)
-		if frame.backdrop then
-			frame.backdrop:SetFrameLevel(frame:GetFrameLevel())
+local function StyleBlackListFrames()
+	if not IsPfUIActive() then return end
+	
+	-- Style the main options frame
+	if BlackListOptionsFrame and not BlackListOptionsFrame.pfuiStyled then
+		pfUI.api.CreateBackdrop(BlackListOptionsFrame, nil, true)
+		pfUI.api.CreateBackdropShadow(BlackListOptionsFrame)
+		BlackListOptionsFrame.pfuiStyled = true
+	end
+	
+	-- Style the details frame  
+	if BlackListDetailsFrame and not BlackListDetailsFrame.pfuiStyled then
+		pfUI.api.CreateBackdrop(BlackListDetailsFrame, nil, true)
+		pfUI.api.CreateBackdropShadow(BlackListDetailsFrame)
+		BlackListDetailsFrame.pfuiStyled = true
+	end
+	
+	-- Style the BlackList tab to match other tabs
+	if BlackListFrameToggleTab3 and not BlackListFrameToggleTab3.pfuiStyled then
+		pfUI.api.SkinTab(BlackListFrameToggleTab3)
+		BlackListFrameToggleTab3.pfuiStyled = true
+	end
+	
+	-- Style checkboxes in options
+	for i = 1, 7 do
+		local checkbox = getglobal("BlackListOptionsCheckButton" .. i)
+		if checkbox and not checkbox.pfuiStyled and pfUI.api.SkinCheckBox then
+			pfUI.api.SkinCheckBox(checkbox)
+			checkbox.pfuiStyled = true
 		end
-		
-		-- Style buttons if pfUI has button styling
-		if pfUI.api.SkinButton then
-			local children = {frame:GetChildren()}
-			for _, child in ipairs(children) do
-				if child:GetObjectType() == "Button" and not child.pfuiStyled then
-					pfUI.api.SkinButton(child)
-					child.pfuiStyled = true
-				end
-			end
-		end
-	else
-		-- Fallback to standard Classic styling
-		frame:SetBackdrop({
-			bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
-			edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
-			tile = true, tileSize = 32, edgeSize = 32,
-			insets = { left = 11, right = 12, top = 12, bottom = 11 }
-		})
-		frame:SetBackdropColor(0, 0, 0, 1)
 	end
 end
+
+-- Hook into BlackList UI functions like pfUI hooks into Blizzard functions
+local originalShowOptions = nil
+local originalUpdateUI = nil
+
+local function InitializePfUIIntegration()
+	if not IsPfUIActive() then return end
+	
+	-- Hook the ShowOptions function to apply styling when frames are shown
+	if BlackList and BlackList.ShowOptions and not originalShowOptions then
+		originalShowOptions = BlackList.ShowOptions
+		BlackList.ShowOptions = function(self)
+			originalShowOptions(self)
+			StyleBlackListFrames()
+		end
+	end
+	
+	-- Hook the UpdateUI function to ensure styling is maintained
+	if BlackList and BlackList.UpdateUI and not originalUpdateUI then
+		originalUpdateUI = BlackList.UpdateUI  
+		BlackList.UpdateUI = function(self)
+			originalUpdateUI(self)
+			StyleBlackListFrames()
+		end
+	end
+end
+
+-- Make the function globally accessible for XML OnLoad scripts
+_G.InitializePfUIIntegration = InitializePfUIIntegration
 
 -- Phrase variables
 PLAYER_IGNORING 			= "Player is ignoring you.";
@@ -285,19 +315,4 @@ function BlackList:UpdateOptionsUI()
 	getglobal("BlackListOptionsCheckButton5"):SetChecked(self:GetOption("preventInvites", true));
 	getglobal("BlackListOptionsCheckButton6"):SetChecked(self:GetOption("preventMyInvites", false));
 	getglobal("BlackListOptionsCheckButton7"):SetChecked(self:GetOption("warnPartyJoin", true));
-	
-	-- Apply pfUI styling to checkboxes if available
-	self:StyleOptionsCheckboxes();
-end
-
-function BlackList:StyleOptionsCheckboxes()
-	if IsPfUIActive() and pfUI.api.SkinCheckBox then
-		for i = 1, 7 do
-			local checkbox = getglobal("BlackListOptionsCheckButton" .. i);
-			if checkbox and not checkbox.pfuiStyled then
-				pfUI.api.SkinCheckBox(checkbox);
-				checkbox.pfuiStyled = true;
-			end
-		end
-	end
 end
