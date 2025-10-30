@@ -94,16 +94,15 @@ local function StyleBlackListFrames()
 		BlackListFrameToggleTab2.pfuiStyled = true
 	end
 	
-	if BlackListFrameToggleTab3 and getglobal("BlackListFrameToggleTab3") ~= BlackListFrameToggleTab3 then
-		-- This is the third tab within BlackListFrame (different from the main tab)
-		local tab3 = getglobal("BlackListFrameToggleTab3")
-		if tab3 and not tab3.pfuiStyled then
-			pfUI.api.SkinTab(tab3)
-			-- Reposition with pfUI's spacing calculation
-			tab3:ClearAllPoints()
-			tab3:SetPoint("LEFT", BlackListFrameToggleTab2, "RIGHT", tabSpacing, 0)
-			tab3.pfuiStyled = true
-		end
+	-- Get the actual BlackListFrameToggleTab3 from the BlackListFrame (not the global one)
+	local blTab3 = getglobal("BlackListFrameToggleTab3")
+	if blTab3 and blTab3 ~= BlackListFrameToggleTab3 and not blTab3.pfuiStyled then
+		pfUI.api.SkinTab(blTab3)
+		-- Reposition with pfUI's spacing calculation
+		blTab3:ClearAllPoints()
+		blTab3:SetPoint("LEFT", BlackListFrameToggleTab2, "RIGHT", tabSpacing, 0)
+		blTab3.pfuiStyled = true
+		DEFAULT_CHAT_FRAME:AddMessage("BlackList: Styled BlackListFrameToggleTab3 (internal) with spacing=" .. tabSpacing)
 	end
 end
 
