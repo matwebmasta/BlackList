@@ -268,23 +268,25 @@ BINDING_NAME_TOGGLE_BLACKLIST	= "Toggle BlackList";
 -- Inserts all of the UI elements
 function BlackList:InsertUI()
 
-	-- Add tab buttons to Friends tab (create programmatically instead of using XML templates)
+	-- Add tab buttons to Friends tab (recreating the alignment from commit c397a1e6)
 	local friendsTab = CreateFrame("Button", "FriendFrameToggleTab3", FriendsListFrame, "TabButtonTemplate")
-	friendsTab:SetText("BLACK")
+	friendsTab:SetText("BLACKLIST")
 	friendsTab:SetID(3)
-	-- Position after the Ignore tab with minimal spacing
-	friendsTab:SetPoint("LEFT", FriendsFrameToggleTab2, "RIGHT", -5, 0)
+	-- Use exact positioning from working commit: no offset (0, 0)
+	friendsTab:SetPoint("LEFT", FriendsFrameToggleTab2, "RIGHT", 0, 0)
+	PanelTemplates_DeselectTab(friendsTab)
 	friendsTab:SetScript("OnClick", function()
-		FriendsFrame_ShowSubFrame("BlackListFrame")
+		BlackList:ShowTab()
 	end)
 	
 	local ignoreTab = CreateFrame("Button", "IgnoreFrameToggleTab3", IgnoreListFrame, "TabButtonTemplate")
-	ignoreTab:SetText("BLACK")
+	ignoreTab:SetText("BLACKLIST")
 	ignoreTab:SetID(3)
-	-- Position after the Friends tab with minimal spacing
-	ignoreTab:SetPoint("LEFT", IgnoreFrameToggleTab2, "RIGHT", -5, 0)
+	-- Use exact positioning from working commit: no offset (0, 0)
+	ignoreTab:SetPoint("LEFT", IgnoreFrameToggleTab2, "RIGHT", 0, 0)
+	PanelTemplates_DeselectTab(ignoreTab)
 	ignoreTab:SetScript("OnClick", function()
-		FriendsFrame_ShowSubFrame("BlackListFrame")
+		BlackList:ShowTab()
 	end)
 	
 	-- Add the tab itself
