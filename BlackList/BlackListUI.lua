@@ -422,17 +422,22 @@ function BlackList:CreateStandaloneWindow()
 	frame:SetClampedToScreen(true)
 	frame:Hide()
 	
-	-- Apply pfUI styling if available, otherwise use default backdrop
-	if IsPfUIActive() then
-		pfUI.api.CreateBackdrop(frame, nil, true)
-	else
-		frame:SetBackdrop({
-			bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
-			edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
-			tile = true, tileSize = 32, edgeSize = 32,
-			insets = {left = 11, right = 12, top = 12, bottom = 11}
-		})
-	end
+	-- Set default backdrop first
+	frame:SetBackdrop({
+		bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+		edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+		tile = true, tileSize = 32, edgeSize = 32,
+		insets = {left = 11, right = 12, top = 12, bottom = 11}
+	})
+	
+	-- Apply pfUI styling on first show (when pfUI is fully loaded)
+	frame:SetScript("OnShow", function()
+		if not this.pfuiStyled and IsPfUIActive() and pfUI and pfUI.api and pfUI.api.CreateBackdrop then
+			DEFAULT_CHAT_FRAME:AddMessage("BlackList: Applying pfUI styling to main window", 0, 1, 0)
+			pfUI.api.CreateBackdrop(this, nil, true)
+			this.pfuiStyled = true
+		end
+	end)
 	
 	-- Title
 	local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
@@ -632,17 +637,26 @@ function BlackList:ShowStandaloneDetails()
 		detailsFrame:EnableMouse(true)
 		detailsFrame:SetClampedToScreen(true)
 		
-		-- Apply pfUI styling if available, otherwise use default backdrop
-		if IsPfUIActive() then
-			pfUI.api.CreateBackdrop(detailsFrame, nil, true)
-		else
-			detailsFrame:SetBackdrop({
-				bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
-				edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
-				tile = true, tileSize = 32, edgeSize = 32,
-				insets = {left = 11, right = 12, top = 12, bottom = 11}
-			})
-		end
+		-- Set default backdrop first
+		detailsFrame:SetBackdrop({
+			bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+			edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+			tile = true, tileSize = 32, edgeSize = 32,
+			insets = {left = 11, right = 12, top = 12, bottom = 11}
+		})
+		
+		-- Apply pfUI styling on first show
+		detailsFrame:SetScript("OnShow", function()
+			if not this.pfuiStyled and IsPfUIActive() and pfUI and pfUI.api and pfUI.api.CreateBackdrop then
+				pfUI.api.CreateBackdrop(this, nil, true)
+				this.pfuiStyled = true
+			end
+			-- Close options when details is opened
+			local optionsFrame = getglobal("BlackListOptionsFrame_New")
+			if optionsFrame and optionsFrame:IsVisible() then
+				optionsFrame:Hide()
+			end
+		end)
 		
 		-- Title
 		local title = detailsFrame:CreateFontString("BlackListStandaloneDetails_Title", "OVERLAY", "GameFontNormalLarge")
@@ -717,14 +731,6 @@ function BlackList:ShowStandaloneDetails()
 		-- Save when details window is hidden
 		detailsFrame:SetScript("OnHide", function()
 			SaveReason()
-		end)
-		
-		-- Close options when details is opened
-		detailsFrame:SetScript("OnShow", function()
-			local optionsFrame = getglobal("BlackListOptionsFrame_New")
-			if optionsFrame and optionsFrame:IsVisible() then
-				optionsFrame:Hide()
-			end
 		end)
 		
 		-- Store reference to SaveReason so it can be called from outside
