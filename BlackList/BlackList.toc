@@ -1,4 +1,4 @@
-## Interface: 20100
+## Interface: 11200
 ## Title: Billy's BlackList
 ## Version: 1.0
 ## Author: BillyBobily
