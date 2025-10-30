@@ -497,6 +497,12 @@ function BlackList:CreateStandaloneWindow()
 		
 		-- Click handler
 		button:SetScript("OnClick", function()
+			-- Save current player's reason before switching
+			local detailsFrame = getglobal("BlackListStandaloneDetailsFrame")
+			if detailsFrame and detailsFrame.SaveReason then
+				detailsFrame.SaveReason()
+			end
+			
 			BlackList:SetSelectedBlackList(this:GetID())
 			BlackList:UpdateStandaloneUI()
 			BlackList:ShowStandaloneDetails()
@@ -685,23 +691,28 @@ function BlackList:ShowStandaloneDetails()
 		reasonLabel:SetPoint("TOPLEFT", dateText, "BOTTOMLEFT", 0, -15)
 		reasonLabel:SetText("Reason:")
 		
-		-- Reason text box (single line)
-		local reasonText = CreateFrame("EditBox", "BlackListStandaloneDetails_ReasonText", detailsFrame)
-		reasonText:SetPoint("TOPLEFT", reasonLabel, "BOTTOMLEFT", 5, -10)
-		reasonText:SetPoint("RIGHT", detailsFrame, "RIGHT", -20, 0)
-		reasonText:SetHeight(24)
-		reasonText:SetAutoFocus(false)
-		reasonText:SetFontObject(GameFontHighlight)
-		reasonText:SetTextInsets(5, 0, 5, 0)
+		-- Reason scroll frame for multiline text
+		local reasonScrollFrame = CreateFrame("ScrollFrame", "BlackListStandaloneDetails_ReasonScrollFrame", detailsFrame, "UIPanelScrollFrameTemplate")
+		reasonScrollFrame:SetPoint("TOPLEFT", reasonLabel, "BOTTOMLEFT", 0, -10)
+		reasonScrollFrame:SetPoint("BOTTOMRIGHT", detailsFrame, "BOTTOMRIGHT", -30, 20)
 		
-		-- Backdrop for reason text box
-		reasonText:SetBackdrop({
+		-- Backdrop for scroll frame
+		reasonScrollFrame:SetBackdrop({
 			bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
 			edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
 			tile = true, tileSize = 16, edgeSize = 16,
 			insets = {left = 4, right = 4, top = 4, bottom = 4}
 		})
-		reasonText:SetBackdropColor(0, 0, 0, 0.5)
+		reasonScrollFrame:SetBackdropColor(0, 0, 0, 0.5)
+		
+		-- Reason text box (multiline)
+		local reasonText = CreateFrame("EditBox", "BlackListStandaloneDetails_ReasonText", reasonScrollFrame)
+		reasonText:SetMultiLine(true)
+		reasonText:SetAutoFocus(false)
+		reasonText:SetFontObject(GameFontHighlight)
+		reasonText:SetWidth(reasonScrollFrame:GetWidth() - 20)
+		reasonText:SetMaxLetters(0)
+		reasonScrollFrame:SetScrollChild(reasonText)
 		
 		-- Function to save reason
 		local function SaveReason()
@@ -722,9 +733,6 @@ function BlackList:ShowStandaloneDetails()
 		reasonText:SetScript("OnEditFocusLost", SaveReason)
 		reasonText:SetScript("OnEscapePressed", function()
 			this:ClearFocus()
-			SaveReason()
-		end)
-		reasonText:SetScript("OnEnterPressed", function()
 			SaveReason()
 		end)
 		
