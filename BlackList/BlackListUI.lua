@@ -78,31 +78,35 @@ local function StyleBlackListFrames()
 	end
 	
 	-- Style the BlackListFrame's own tabs (when viewing the BlackList tab)
-	if BlackListFrameToggleTab1 and not BlackListFrameToggleTab1.pfuiStyled then
-		pfUI.api.SkinTab(BlackListFrameToggleTab1)
+	-- These are: BlackListFrameToggleTab1 (Friends), BlackListFrameToggleTab2 (Ignore), BlackListFrameToggleTab3 (BlackList)
+	local blTab1 = getglobal("BlackListFrameToggleTab1")
+	if blTab1 and not blTab1.pfuiStyled then
+		pfUI.api.SkinTab(blTab1)
 		-- Position it like pfUI does: anchor to scroll frame
-		BlackListFrameToggleTab1:ClearAllPoints()
-		BlackListFrameToggleTab1:SetPoint("BOTTOMLEFT", FriendsFrameBlackListScrollFrame, "TOPLEFT", 0, tabSpacing)
-		BlackListFrameToggleTab1.pfuiStyled = true
+		blTab1:ClearAllPoints()
+		blTab1:SetPoint("BOTTOMLEFT", FriendsFrameBlackListScrollFrame, "TOPLEFT", 0, tabSpacing)
+		blTab1.pfuiStyled = true
+		DEFAULT_CHAT_FRAME:AddMessage("BlackList: Styled BlackListFrameToggleTab1 with spacing=" .. tabSpacing)
 	end
 	
-	if BlackListFrameToggleTab2 and not BlackListFrameToggleTab2.pfuiStyled then
-		pfUI.api.SkinTab(BlackListFrameToggleTab2)
+	local blTab2 = getglobal("BlackListFrameToggleTab2")
+	if blTab2 and not blTab2.pfuiStyled then
+		pfUI.api.SkinTab(blTab2)
 		-- Reposition with pfUI's spacing calculation
-		BlackListFrameToggleTab2:ClearAllPoints()
-		BlackListFrameToggleTab2:SetPoint("LEFT", BlackListFrameToggleTab1, "RIGHT", tabSpacing, 0)
-		BlackListFrameToggleTab2.pfuiStyled = true
+		blTab2:ClearAllPoints()
+		blTab2:SetPoint("LEFT", blTab1, "RIGHT", tabSpacing, 0)
+		blTab2.pfuiStyled = true
+		DEFAULT_CHAT_FRAME:AddMessage("BlackList: Styled BlackListFrameToggleTab2 with spacing=" .. tabSpacing)
 	end
 	
-	-- Get the actual BlackListFrameToggleTab3 from the BlackListFrame (not the global one)
 	local blTab3 = getglobal("BlackListFrameToggleTab3")
-	if blTab3 and blTab3 ~= BlackListFrameToggleTab3 and not blTab3.pfuiStyled then
+	if blTab3 and not blTab3.pfuiStyled then
 		pfUI.api.SkinTab(blTab3)
 		-- Reposition with pfUI's spacing calculation
 		blTab3:ClearAllPoints()
-		blTab3:SetPoint("LEFT", BlackListFrameToggleTab2, "RIGHT", tabSpacing, 0)
+		blTab3:SetPoint("LEFT", blTab2, "RIGHT", tabSpacing, 0)
 		blTab3.pfuiStyled = true
-		DEFAULT_CHAT_FRAME:AddMessage("BlackList: Styled BlackListFrameToggleTab3 (internal) with spacing=" .. tabSpacing)
+		DEFAULT_CHAT_FRAME:AddMessage("BlackList: Styled BlackListFrameToggleTab3 with spacing=" .. tabSpacing)
 	end
 end
 
