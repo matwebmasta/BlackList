@@ -62,8 +62,6 @@ function BlackList:HookFunctions()
 
 end
 
-end
-
 -- Hooked ChatFrame_OnEvent function (like SuperIgnore does)
 function BlackList_ChatFrame_OnEvent(event)
 	
