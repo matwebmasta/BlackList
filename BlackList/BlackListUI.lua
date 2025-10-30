@@ -45,15 +45,173 @@ local function StyleBlackListFrames()
 		pfUI.api.SkinTab(BlackListFrameToggleTab3)
 		BlackListFrameToggleTab3.pfuiStyled = true
 	end
+end
+
+-- SuperIgnore-style Options System
+local BlackListOptionsFrame_New = nil
+
+local function CreateBlackListFrame(name, width, parent, x, y)
+	local f = CreateFrame("Frame", name, parent)
+	f:SetWidth(width)
+	f:SetHeight(400)  -- Set a reasonable height
+	f:SetBackdrop({
+		bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background", 
+		tile = true, tileSize = 32,
+		edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+		insets = {left = 11, right = 12, top = 12, bottom = 11},
+	})
+	f:SetPoint("CENTER", UIParent, "CENTER", x or 0, y or 0)
+	f:SetMovable(true)
+	f:EnableMouse(true)
+	f:RegisterForDrag("LeftButton")
+	f:SetScript("OnDragStart", function() this:StartMoving() end)
+	f:SetScript("OnDragStop", function() this:StopMovingOrSizing() end)
+	f:Hide()
 	
-	-- Style checkboxes in options
-	for i = 1, 7 do
-		local checkbox = getglobal("BlackListOptionsCheckButton" .. i)
-		if checkbox and not checkbox.pfuiStyled and pfUI.api.SkinCheckBox then
-			pfUI.api.SkinCheckBox(checkbox)
-			checkbox.pfuiStyled = true
+	-- Apply pfUI styling if available
+	if IsPfUIActive() then
+		pfUI.api.CreateBackdrop(f, nil, true)
+		if pfUI.api.CreateBackdropShadow then
+			pfUI.api.CreateBackdropShadow(f)
 		end
 	end
+	
+	return f
+end
+
+local function CreateBlackListHeader(frame, text, fontSize, pad)
+	local t = frame:CreateFontString(nil, "OVERLAY", frame)
+	t:SetPoint("TOP", frame, "TOP", 0, pad)
+	t:SetFont("Fonts\\FRIZQT__.TTF", fontSize)
+	t:SetTextColor(1, 0.82, 0)  -- Gold color like SuperIgnore
+	t:SetText(text)
+	return t
+end
+
+local function CreateBlackListOption(frame, name, desc, pad, onclick)
+	local c = CreateFrame("CheckButton", name, frame, "UICheckButtonTemplate")
+	c:SetHeight(20)
+	c:SetWidth(20)
+	c:SetPoint("TOPLEFT", frame, "TOPLEFT", 15, pad)
+	c:SetScript("OnClick", function()
+		onclick(c:GetChecked())
+	end)
+	
+	-- Apply pfUI styling if available
+	if IsPfUIActive() and pfUI.api.SkinCheckbox then
+		pfUI.api.SkinCheckbox(c)
+	end
+	
+	local ct = frame:CreateFontString(nil, "OVERLAY", frame)
+	ct:SetPoint("LEFT", c, "RIGHT", 5, 0)
+	ct:SetFont("Fonts\\FRIZQT__.TTF", 11)
+	ct:SetTextColor(1, 1, 1)  -- White text
+	ct:SetText(desc)
+	
+	return c, ct
+end
+
+local function CreateBlackListCloseButton(frame)
+	local closeBtn = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
+	closeBtn:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -5, -5)
+	closeBtn:SetScript("OnClick", function() frame:Hide() end)
+	
+	-- Apply pfUI styling if available
+	if IsPfUIActive() and pfUI.api.SkinCloseButton then
+		pfUI.api.SkinCloseButton(closeBtn, frame)
+	end
+	
+	return closeBtn
+end
+
+local function CreateNewOptionsFrame()
+	if BlackListOptionsFrame_New then
+		return BlackListOptionsFrame_New
+	end
+	
+	-- Create the main frame
+	BlackListOptionsFrame_New = CreateBlackListFrame("BlackListOptionsFrame_New", 300, UIParent, 0, 0)
+	local f = BlackListOptionsFrame_New
+	
+	-- Add close button
+	CreateBlackListCloseButton(f)
+	
+	local pad = -20
+	
+	-- Title
+	CreateBlackListHeader(f, "BlackList Options", 14, pad)
+	pad = pad - 30
+	
+	-- General Settings Section
+	CreateBlackListHeader(f, "General Settings", 12, pad)
+	pad = pad - 25
+	
+	local playSounds, playSoundsText = CreateBlackListOption(f, "BL_PlaySounds", "Play warning sounds", pad, function(checked)
+		BlackList:ToggleOption("playSounds", checked)
+	end)
+	pad = pad - 25
+	
+	local warnTarget, warnTargetText = CreateBlackListOption(f, "BL_WarnTarget", "Warn when targeting blacklisted players", pad, function(checked)
+		BlackList:ToggleOption("warnTarget", checked)
+	end)
+	pad = pad - 35
+	
+	-- Communication Section
+	CreateBlackListHeader(f, "Communication", 12, pad)
+	pad = pad - 25
+	
+	local preventWhispers, preventWhispersText = CreateBlackListOption(f, "BL_PreventWhispers", "Prevent whispers from blacklisted players", pad, function(checked)
+		BlackList:ToggleOption("preventWhispers", checked)
+	end)
+	pad = pad - 25
+	
+	local warnWhispers, warnWhispersText = CreateBlackListOption(f, "BL_WarnWhispers", "Warn when blacklisted players whisper you", pad, function(checked)
+		BlackList:ToggleOption("warnWhispers", checked)
+	end)
+	pad = pad - 35
+	
+	-- Group Management Section
+	CreateBlackListHeader(f, "Group Management", 12, pad)
+	pad = pad - 25
+	
+	local preventInvites, preventInvitesText = CreateBlackListOption(f, "BL_PreventInvites", "Prevent blacklisted players from inviting you", pad, function(checked)
+		BlackList:ToggleOption("preventInvites", checked)
+	end)
+	pad = pad - 25
+	
+	local preventMyInvites, preventMyInvitesText = CreateBlackListOption(f, "BL_PreventMyInvites", "Prevent yourself from inviting blacklisted players", pad, function(checked)
+		BlackList:ToggleOption("preventMyInvites", checked)
+	end)
+	pad = pad - 25
+	
+	local warnPartyJoin, warnPartyJoinText = CreateBlackListOption(f, "BL_WarnPartyJoin", "Warn when blacklisted players join your party", pad, function(checked)
+		BlackList:ToggleOption("warnPartyJoin", checked)
+	end)
+	
+	-- Store references for updating
+	f.checkboxes = {
+		{checkbox = playSounds, option = "playSounds", default = true},
+		{checkbox = warnTarget, option = "warnTarget", default = true},
+		{checkbox = preventWhispers, option = "preventWhispers", default = true},
+		{checkbox = warnWhispers, option = "warnWhispers", default = true},
+		{checkbox = preventInvites, option = "preventInvites", default = true},
+		{checkbox = preventMyInvites, option = "preventMyInvites", default = false},
+		{checkbox = warnPartyJoin, option = "warnPartyJoin", default = true}
+	}
+	
+	return f
+end
+
+function BlackList:ShowNewOptions()
+	local frame = CreateNewOptionsFrame()
+	
+	-- Update checkbox states
+	for _, data in ipairs(frame.checkboxes) do
+		data.checkbox:SetChecked(self:GetOption(data.option, data.default))
+	end
+	
+	frame:Show()
+end
 end
 
 -- Hook into BlackList UI functions like pfUI hooks into Blizzard functions
@@ -285,8 +443,8 @@ function BlackList:UpdateUI()
 end
 
 function BlackList:ShowOptions()
-	BlackListOptionsFrame:Show();
-	self:UpdateOptionsUI();
+	-- Use the new SuperIgnore-style options instead of the old XML frame
+	self:ShowNewOptions()
 end
 
 function BlackList:ToggleOption(optionName, value)
