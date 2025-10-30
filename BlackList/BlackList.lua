@@ -47,27 +47,67 @@ function BlackList:RegisterEvents()
 
 end
 
-local Orig_ChatFrame_MessageEventHandler;
+local Orig_ChatFrame_OnEvent;
 local Orig_InviteByName;
 -- Hooks onto the functions needed
 function BlackList:HookFunctions()
 
-	Orig_ChatFrame_MessageEventHandler = ChatFrame_MessageEventHandler;
-	ChatFrame_MessageEventHandler = BlackList_MessageEventHandler;
+	Orig_ChatFrame_OnEvent = ChatFrame_OnEvent;
+	ChatFrame_OnEvent = BlackList_ChatFrame_OnEvent;
 
 	Orig_InviteByName = InviteByName;
 	InviteByName = BlackList_InviteByName;
 	
-	-- Debug: Confirm hooks are set up
-	DEFAULT_CHAT_FRAME:AddMessage("BlackList: Hooks installed successfully", 0, 1, 0);
+	DEFAULT_CHAT_FRAME:AddMessage("BlackList: Hooks installed", 0, 1, 0);
 
 end
 
--- Hooked ChatFrame_MessageEventHandler function
-function BlackList_MessageEventHandler(event)
+end
 
-	-- Debug: Confirm function is being called
-	DEFAULT_CHAT_FRAME:AddMessage("BlackList DEBUG: MessageEventHandler called with event: " .. event, 0.5, 0.5, 0.5);
+-- Hooked ChatFrame_OnEvent function (like SuperIgnore does)
+function BlackList_ChatFrame_OnEvent(event)
+	
+	-- Handle whisper blocking/warning
+	if event == "CHAT_MSG_WHISPER" then
+		local name = arg2;
+		
+		if (BlackList:GetIndexByName(name) > 0) then
+			local player = BlackList:GetPlayerByIndex(BlackList:GetIndexByName(name));
+			
+			-- Check if we should block whispers
+			if (BlackList:GetOption("preventWhispers", true)) then
+				-- Send auto-reply
+				if (name ~= UnitName("player")) then
+					SendChatMessage(PLAYER_IGNORING, "WHISPER", nil, name);
+				end
+				-- Block the whisper by not calling the original handler
+				return;
+			end
+			
+			-- Check if we should warn about whispers
+			if (BlackList:GetOption("warnWhispers", true)) then
+				local alreadywarned = false;
+				
+				for key, warnedname in pairs(Already_Warned_For["WHISPER"]) do
+					if (name == warnedname) then
+						alreadywarned = true;
+					end
+				end
+				
+				if (not alreadywarned) then
+					table.insert(Already_Warned_For["WHISPER"], name);
+					BlackList:AddMessage("BlackList: " .. name .. " is blacklisted and whispered you.", "yellow");
+				end
+			end
+		end
+	end
+	
+	-- Call the original handler
+	Orig_ChatFrame_OnEvent(event);
+end
+
+-- Old MessageEventHandler function - DEPRECATED, keeping for reference
+function BlackList_MessageEventHandler(event)
 
 	local warnplayer, warnname = false, nil;
 
@@ -79,22 +119,11 @@ function BlackList_MessageEventHandler(event)
 				-- search for player name
 				local name = arg2;
 				
-				-- Debug: Check if we're detecting whispers from blacklisted players
-				if (type == "WHISPER") then
-					DEFAULT_CHAT_FRAME:AddMessage("BlackList DEBUG: Whisper from " .. name, 0.5, 0.5, 0.5);
-				end
-				
 				if (BlackList:GetIndexByName(name) > 0) then
 					local player = BlackList:GetPlayerByIndex(BlackList:GetIndexByName(name));
 					
-					-- Debug: Confirm player is blacklisted
-					if (type == "WHISPER") then
-						DEFAULT_CHAT_FRAME:AddMessage("BlackList DEBUG: " .. name .. " is blacklisted!", 0.5, 0.5, 0.5);
-					end
-					
 					-- Check if we should block whispers
 					if (type == "WHISPER" and BlackList:GetOption("preventWhispers", true)) then
-						DEFAULT_CHAT_FRAME:AddMessage("BlackList DEBUG: Blocking whisper from " .. name, 0.5, 0.5, 0.5);
 						-- respond to whisper
 						if (name ~= UnitName("player")) then
 							SendChatMessage(PLAYER_IGNORING, "WHISPER", nil, name);
