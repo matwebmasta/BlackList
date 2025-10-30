@@ -404,8 +404,9 @@ function BlackList:CreateStandaloneWindow()
 	local frame = CreateFrame("Frame", "BlackListStandaloneFrame", UIParent)
 	frame:SetWidth(350)
 	frame:SetHeight(450)
-	frame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
-	frame:SetMovable(true)
+	-- Position like FriendsFrame/CharacterFrame (left side of screen)
+	frame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 16, -116)
+	frame:SetMovable(false)
 	frame:EnableMouse(true)
 	frame:SetClampedToScreen(true)
 	frame:Hide()
@@ -432,15 +433,7 @@ function BlackList:CreateStandaloneWindow()
 	local closeBtn = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
 	closeBtn:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -5, -5)
 	
-	-- Make draggable
-	frame:SetScript("OnMouseDown", function()
-		if arg1 == "LeftButton" then
-			this:StartMoving()
-		end
-	end)
-	frame:SetScript("OnMouseUp", function()
-		this:StopMovingOrSizing()
-	end)
+	-- Remove dragging scripts since it's now static
 	
 	-- Create scroll frame for player list
 	local scrollFrame = CreateFrame("ScrollFrame", "BlackListStandaloneScrollFrame", frame, "FauxScrollFrameTemplate")
@@ -477,6 +470,7 @@ function BlackList:CreateStandaloneWindow()
 		button:SetScript("OnClick", function()
 			BlackList:SetSelectedBlackList(this:GetID())
 			BlackList:UpdateStandaloneUI()
+			BlackList:ShowStandaloneDetails()
 		end)
 	end
 	
@@ -591,6 +585,131 @@ function BlackList:UpdateStandaloneUI()
 	
 	-- Update scroll frame
 	FauxScrollFrame_Update(scrollFrame, numBlackLists, 7, 16)
+end
+
+function BlackList:ShowStandaloneDetails()
+	local player = self:GetPlayerByIndex(self:GetSelectedBlackList())
+	if not player then return end
+	
+	-- Create or get details frame
+	local detailsFrame = getglobal("BlackListStandaloneDetailsFrame")
+	if not detailsFrame then
+		detailsFrame = CreateFrame("Frame", "BlackListStandaloneDetailsFrame", UIParent)
+		detailsFrame:SetWidth(300)
+		detailsFrame:SetHeight(250)
+		-- Position to the right of the main BlackList window
+		local mainFrame = getglobal("BlackListStandaloneFrame")
+		if mainFrame then
+			detailsFrame:SetPoint("TOPLEFT", mainFrame, "TOPRIGHT", 10, 0)
+		else
+			detailsFrame:SetPoint("CENTER", UIParent, "CENTER", 200, 0)
+		end
+		detailsFrame:SetMovable(false)
+		detailsFrame:EnableMouse(true)
+		detailsFrame:SetClampedToScreen(true)
+		
+		-- Backdrop
+		detailsFrame:SetBackdrop({
+			bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+			edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+			tile = true, tileSize = 32, edgeSize = 32,
+			insets = {left = 11, right = 12, top = 12, bottom = 11}
+		})
+		
+		-- Apply pfUI styling if available
+		if IsPfUIActive() then
+			pfUI.api.CreateBackdrop(detailsFrame, nil, true)
+		end
+		
+		-- Title
+		local title = detailsFrame:CreateFontString("BlackListStandaloneDetails_Title", "OVERLAY", "GameFontNormalLarge")
+		title:SetPoint("TOP", detailsFrame, "TOP", 0, -15)
+		
+		-- Close button
+		local closeBtn = CreateFrame("Button", nil, detailsFrame, "UIPanelCloseButton")
+		closeBtn:SetPoint("TOPRIGHT", detailsFrame, "TOPRIGHT", -5, -5)
+		
+		-- Details window is static, not draggable
+		
+		-- Level/Class text
+		local levelText = detailsFrame:CreateFontString("BlackListStandaloneDetails_Level", "OVERLAY", "GameFontNormal")
+		levelText:SetPoint("TOPLEFT", detailsFrame, "TOPLEFT", 20, -50)
+		
+		-- Race text
+		local raceText = detailsFrame:CreateFontString("BlackListStandaloneDetails_Race", "OVERLAY", "GameFontNormal")
+		raceText:SetPoint("TOPLEFT", levelText, "BOTTOMLEFT", 0, -5)
+		
+		-- Date added text
+		local dateText = detailsFrame:CreateFontString("BlackListStandaloneDetails_Date", "OVERLAY", "GameFontNormal")
+		dateText:SetPoint("TOPLEFT", raceText, "BOTTOMLEFT", 0, -10)
+		
+		-- Reason label
+		local reasonLabel = detailsFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+		reasonLabel:SetPoint("TOPLEFT", dateText, "BOTTOMLEFT", 0, -15)
+		reasonLabel:SetText("Reason:")
+		
+		-- Reason text box (scrollable)
+		local reasonBox = CreateFrame("ScrollFrame", "BlackListStandaloneDetails_ReasonScroll", detailsFrame, "UIPanelScrollFrameTemplate")
+		reasonBox:SetPoint("TOPLEFT", reasonLabel, "BOTTOMLEFT", 0, -10)
+		reasonBox:SetPoint("BOTTOMRIGHT", detailsFrame, "BOTTOMRIGHT", -30, 15)
+		
+		local reasonText = CreateFrame("EditBox", "BlackListStandaloneDetails_ReasonText", reasonBox)
+		reasonText:SetWidth(250)
+		reasonText:SetHeight(80)
+		reasonText:SetMultiLine(true)
+		reasonText:SetAutoFocus(false)
+		reasonText:SetFontObject(GameFontHighlight)
+		reasonBox:SetScrollChild(reasonText)
+		
+		-- Backdrop for reason box
+		reasonBox:SetBackdrop({
+			bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+			edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+			tile = true, tileSize = 16, edgeSize = 16,
+			insets = {left = 4, right = 4, top = 4, bottom = 4}
+		})
+		reasonBox:SetBackdropColor(0, 0, 0, 0.5)
+	end
+	
+	-- Update details
+	local title = getglobal("BlackListStandaloneDetails_Title")
+	if title then
+		title:SetText("Details: " .. player["name"])
+	end
+	
+	local levelText = getglobal("BlackListStandaloneDetails_Level")
+	if levelText then
+		local level = ""
+		if player["level"] == "" and player["class"] == "" then
+			level = "Unknown Level, Class"
+		elseif player["level"] == "" then
+			level = "Unknown Level " .. player["class"]
+		elseif player["class"] == "" then
+			level = "Level " .. player["level"] .. " Unknown Class"
+		else
+			level = "Level " .. player["level"] .. " " .. player["class"]
+		end
+		levelText:SetText(level)
+	end
+	
+	local raceText = getglobal("BlackListStandaloneDetails_Race")
+	if raceText then
+		local race = player["race"] ~= "" and player["race"] or "Unknown Race"
+		raceText:SetText(race)
+	end
+	
+	local dateText = getglobal("BlackListStandaloneDetails_Date")
+	if dateText then
+		local dateStr = date("%I:%M%p on %b %d, 20%y", player["added"])
+		dateText:SetText("Blacklisted: " .. dateStr)
+	end
+	
+	local reasonText = getglobal("BlackListStandaloneDetails_ReasonText")
+	if reasonText then
+		reasonText:SetText(player["reason"] or "")
+	end
+	
+	detailsFrame:Show()
 end
 
 function BlackList:ClickBlackList()
