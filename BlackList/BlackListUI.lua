@@ -651,11 +651,14 @@ function BlackList:ShowStandaloneDetails()
 			insets = {left = 11, right = 12, top = 12, bottom = 11}
 		})
 		
-		-- Apply pfUI styling on first show
+		-- Apply pfUI styling on show
 		detailsFrame:SetScript("OnShow", function()
-			if not this.pfuiStyled and IsPfUIActive() and pfUI and pfUI.api and pfUI.api.CreateBackdrop then
-				pfUI.api.CreateBackdrop(this, nil, true)
-				this.pfuiStyled = true
+			-- Apply pfUI styling if available
+			if IsPfUIActive() and pfUI and pfUI.api and pfUI.api.CreateBackdrop then
+				if not this.pfuiStyled then
+					pfUI.api.CreateBackdrop(this, nil, true)
+					this.pfuiStyled = true
+				end
 			end
 			-- Close options when details is opened
 			local optionsFrame = getglobal("BlackListOptionsFrame_New")
@@ -712,7 +715,15 @@ function BlackList:ShowStandaloneDetails()
 		reasonText:SetFontObject(GameFontHighlight)
 		reasonText:SetWidth(reasonScrollFrame:GetWidth() - 20)
 		reasonText:SetMaxLetters(0)
+		reasonText:EnableMouse(true)
+		reasonText:EnableKeyboard(true)
 		reasonScrollFrame:SetScrollChild(reasonText)
+		
+		-- Make sure text is visible and editable
+		reasonText:SetScript("OnCursorChanged", function()
+			local _, max = reasonScrollFrame:GetVerticalScrollRange()
+			reasonScrollFrame:UpdateScrollChildRect()
+		end)
 		
 		-- Function to save reason
 		local function SaveReason()
@@ -786,6 +797,12 @@ function BlackList:ShowStandaloneDetails()
 	local reasonText = getglobal("BlackListStandaloneDetails_ReasonText")
 	if reasonText then
 		reasonText:SetText(player["reason"] or "")
+	end
+	
+	-- Apply pfUI styling if available and not yet applied
+	if not detailsFrame.pfuiStyled and IsPfUIActive() and pfUI and pfUI.api and pfUI.api.CreateBackdrop then
+		pfUI.api.CreateBackdrop(detailsFrame, nil, true)
+		detailsFrame.pfuiStyled = true
 	end
 	
 	detailsFrame:Show()
