@@ -719,7 +719,8 @@ function BlackList:ShowStandaloneDetails()
 		
 		-- Function to save reason
 		local function SaveReason()
-			local index = BlackList:GetSelectedBlackList()
+			-- Use the stored index, not the currently selected one
+			local index = detailsFrame.currentPlayerIndex
 			if index and index > 0 then
 				local player = BlackList:GetPlayerByIndex(index)
 				if player then
@@ -749,9 +750,12 @@ function BlackList:ShowStandaloneDetails()
 	end
 	
 	-- Save previous player's reason before showing new one
-	if detailsFrame.SaveReason then
+	if detailsFrame.SaveReason and detailsFrame.currentPlayerIndex then
 		detailsFrame.SaveReason()
 	end
+	
+	-- Store the current player index for saving
+	detailsFrame.currentPlayerIndex = self:GetSelectedBlackList()
 	
 	-- Update details
 	local title = getglobal("BlackListStandaloneDetails_Title")
