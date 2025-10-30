@@ -57,11 +57,17 @@ function BlackList:HookFunctions()
 
 	Orig_InviteByName = InviteByName;
 	InviteByName = BlackList_InviteByName;
+	
+	-- Debug: Confirm hooks are set up
+	DEFAULT_CHAT_FRAME:AddMessage("BlackList: Hooks installed successfully", 0, 1, 0);
 
 end
 
 -- Hooked ChatFrame_MessageEventHandler function
 function BlackList_MessageEventHandler(event)
+
+	-- Debug: Confirm function is being called
+	DEFAULT_CHAT_FRAME:AddMessage("BlackList DEBUG: MessageEventHandler called with event: " .. event, 0.5, 0.5, 0.5);
 
 	local warnplayer, warnname = false, nil;
 
