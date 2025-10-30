@@ -7,7 +7,6 @@ Already_Warned_For["WHISPER"] = {};
 Already_Warned_For["TARGET"] = {};
 Already_Warned_For["PARTY_INVITE"] = {};
 Already_Warned_For["PARTY"] = {};
-Already_Warned_For["MOUSEOVER"] = {};
 
 BlackListedPlayers = {};
 
@@ -23,7 +22,6 @@ function BlackList:OnLoad()
 	self:HookFunctions();
 	self:RegisterSlashCmds();
 
-	FriendsFrameOptionsButton:Disable();
 	FriendsFrameShareListButton:Disable();
 
 end
@@ -38,16 +36,19 @@ function BlackList:RegisterEvents()
 	frame:RegisterEvent("PLAYER_TARGET_CHANGED");
 	frame:RegisterEvent("PARTY_INVITE_REQUEST");
 	frame:RegisterEvent("PARTY_MEMBERS_CHANGED");
-	frame:RegisterEvent("UPDATE_MOUSEOVER_UNIT");
 
 end
 
 local Orig_ChatFrame_MessageEventHandler;
+local Orig_InviteByName;
 -- Hooks onto the functions needed
 function BlackList:HookFunctions()
 
 	Orig_ChatFrame_MessageEventHandler = ChatFrame_MessageEventHandler;
 	ChatFrame_MessageEventHandler = BlackList_MessageEventHandler;
+
+	Orig_InviteByName = InviteByName;
+	InviteByName = BlackList_InviteByName;
 
 end
 
@@ -65,14 +66,14 @@ function BlackList_MessageEventHandler(event)
 				local name = arg2;
 				if (BlackList:GetIndexByName(name) > 0) then
 					local player = BlackList:GetPlayerByIndex(BlackList:GetIndexByName(name));
-					if (player["ignore"]) then
+					if (BlackList:GetOption("preventWhispers", true)) then
 						-- respond to whisper
 						if (type == "WHISPER" and name ~= UnitName("player")) then
 							SendChatMessage(PLAYER_IGNORING, "WHISPER", nil, name);
 						end
 						-- block communication
 						return;
-					elseif (player["warn"]) then
+					elseif (BlackList:GetOption("warnWhispers", true)) then
 						-- warn player
 						if (type == "WHISPER") then
 							local alreadywarned = false;
@@ -102,6 +103,20 @@ function BlackList_MessageEventHandler(event)
 	end
 
 	return returnvalue;
+
+end
+
+-- Hooked InviteByName function
+function BlackList_InviteByName(name)
+
+	if (BlackList:GetOption("preventMyInvites", false)) then
+		if (BlackList:GetIndexByName(name) > 0) then
+			BlackList:AddErrorMessage(name .. " is on your blacklist - invite cancelled", "red", 5);
+			return;
+		end
+	end
+
+	Orig_InviteByName(name);
 
 end
 
@@ -157,6 +172,9 @@ function BlackList:HandleEvent(event)
 		if (not BlackListedPlayers[GetRealmName()]) then
 			BlackListedPlayers[GetRealmName()] = {};
 		end
+		if (not BlackListOptions) then
+			BlackListOptions = {};
+		end
 	elseif (event == "PLAYER_TARGET_CHANGED") then
 		-- search for player name
 		local name = UnitName("target");
@@ -164,7 +182,7 @@ function BlackList:HandleEvent(event)
 		if (BlackList:GetIndexByName(name) > 0) then
 			local player = BlackList:GetPlayerByIndex(BlackList:GetIndexByName(name));
 
-			if (player["warn"]) then
+			if (BlackList:GetOption("warnTarget", true)) then
 				-- warn player
 				local alreadywarned = false;
 
@@ -176,32 +194,9 @@ function BlackList:HandleEvent(event)
 
 				if (not alreadywarned) then
 					Already_Warned_For["TARGET"][name]=GetTime();
-					PlaySound("PVPTHROUGHQUEUE");
-					BlackList:AddErrorMessage(name .. " is on your blacklist", "red", 5);
-					BlackList:AddMessage(name .. " is on your blacklist for reason: " .. player["reason"], "yellow");
-				end
-			end
-		end
-	elseif (event == "UPDATE_MOUSEOVER_UNIT") then
-		-- search for player name
-		local name = UnitName("mouseover");
-		local faction, localizedFaction = UnitFactionGroup("mouseover");
-		if (BlackList:GetIndexByName(name) > 0) then
-			local player = BlackList:GetPlayerByIndex(BlackList:GetIndexByName(name));
-
-			if (player["warn"]) then
-				-- warn player
-				local alreadywarned = false;
-
-				for warnedname, timepassed in pairs(Already_Warned_For["MOUSEOVER"]) do
-					if ((name == warnedname) and (GetTime() < timepassed+10)) then
-						alreadywarned = true;
+					if (BlackList:GetOption("playSounds", true)) then
+						PlaySound("PVPTHROUGHQUEUE");
 					end
-				end
-
-				if (not alreadywarned) then
-					Already_Warned_For["MOUSEOVER"][name]=GetTime();
-					PlaySound("PVPTHROUGHQUEUE");
 					BlackList:AddErrorMessage(name .. " is on your blacklist", "red", 5);
 					BlackList:AddMessage(name .. " is on your blacklist for reason: " .. player["reason"], "yellow");
 				end
@@ -213,11 +208,11 @@ function BlackList:HandleEvent(event)
 		if (BlackList:GetIndexByName(name) > 0) then
 			local player = BlackList:GetPlayerByIndex(BlackList:GetIndexByName(name));
 
-			if (player["ignore"]) then
+			if (BlackList:GetOption("preventInvites", true)) then
 				-- decline party invite
 				DeclineGroup();
 				StaticPopup_Hide("PARTY_INVITE");
-			elseif (player["warn"]) then
+			else
 				-- warn player
 				local alreadywarned = false;
 
@@ -240,7 +235,7 @@ function BlackList:HandleEvent(event)
 			if (BlackList:GetIndexByName(name) > 0) then
 				local player = BlackList:GetPlayerByIndex(BlackList:GetIndexByName(name));
 
-				if (player["warn"]) then
+				if (BlackList:GetOption("warnPartyJoin", true)) then
 					-- warn player
 					local alreadywarned = false;
 
@@ -262,8 +257,8 @@ function BlackList:HandleEvent(event)
 end
 
 -- Blacklists the given player, sets the ignore flag to be 'ignore' and enters the given reason
-function BlackListPlayer(player, ignore, reason)
+function BlackListPlayer(player, reason)
 
-	BlackList:AddPlayer(player, ignore, reason);
+	BlackList:AddPlayer(player, reason);
 
 end

@@ -22,8 +22,6 @@ SHARE_LIST				= "Share List";
 BLACK_LIST_DETAILS_OF		= "BlackList Details of";
 LEVEL					= "Level";
 BLACK_LISTED			= "BlackListed:";
-IGNORE_PLAYER			= "Ignore Player";
-WARN_ME				= "Warn Me";
 REASON				= "Reason:";
 IS_BLACKLISTED			= "is on your blacklist.";
 
@@ -148,12 +146,6 @@ function BlackList:ShowDetails()
 	local date = date("%I:%M%p on %b %d, 20%y", player["added"]);
 	getglobal("BlackListDetailsBlackListedText"):SetText(date);
 
-	-- update checkboxes
-	getglobal("BlackListDetailsFrameCheckButton1Text"):SetText("  " .. IGNORE_PLAYER);
-	getglobal("BlackListDetailsFrameCheckButton1"):SetChecked(player["ignore"]);
-	getglobal("BlackListDetailsFrameCheckButton2Text"):SetText("  " .. WARN_ME);
-	getglobal("BlackListDetailsFrameCheckButton2"):SetChecked(player["warn"]);
-
 	-- update reason
 	getglobal("BlackListDetailsFrameReasonTextBox"):SetText(player["reason"]);
 
@@ -210,4 +202,37 @@ function BlackList:UpdateUI()
 	-- ScrollFrame stuff
 	FauxScrollFrame_Update(FriendsFrameBlackListScrollFrame, numBlackLists, BLACKLISTS_TO_DISPLAY, FRIENDS_FRAME_BLACKLIST_HEIGHT);
 
+end
+
+function BlackList:ShowOptions()
+	BlackListOptionsFrame:Show();
+	self:UpdateOptionsUI();
+end
+
+function BlackList:ToggleOption(optionName, value)
+	if (not BlackListOptions) then
+		BlackListOptions = {};
+	end
+	BlackListOptions[optionName] = value;
+end
+
+function BlackList:GetOption(optionName, defaultValue)
+	if (not BlackListOptions) then
+		BlackListOptions = {};
+	end
+	if (BlackListOptions[optionName] == nil) then
+		return defaultValue;
+	end
+	return BlackListOptions[optionName];
+end
+
+function BlackList:UpdateOptionsUI()
+	-- Set default values if not set
+	getglobal("BlackListOptionsCheckButton1"):SetChecked(self:GetOption("playSounds", true));
+	getglobal("BlackListOptionsCheckButton2"):SetChecked(self:GetOption("warnTarget", true));
+	getglobal("BlackListOptionsCheckButton3"):SetChecked(self:GetOption("preventWhispers", true));
+	getglobal("BlackListOptionsCheckButton4"):SetChecked(self:GetOption("warnWhispers", true));
+	getglobal("BlackListOptionsCheckButton5"):SetChecked(self:GetOption("preventInvites", true));
+	getglobal("BlackListOptionsCheckButton6"):SetChecked(self:GetOption("preventMyInvites", false));
+	getglobal("BlackListOptionsCheckButton7"):SetChecked(self:GetOption("warnPartyJoin", true));
 end

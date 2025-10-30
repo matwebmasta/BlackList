@@ -1,4 +1,4 @@
-function BlackList:AddPlayer(player, warn, ignore, reason)
+function BlackList:AddPlayer(player, reason)
 
 	-- handle player
 	if (player == "" or player == nil) then
@@ -24,16 +24,6 @@ function BlackList:AddPlayer(player, warn, ignore, reason)
 		return;
 	end
 
-	-- handle warn
-	if (warn == nil) then
-		warn = true;
-	end
-
-	-- handle ignore
-	if (ignore == nil or ignore == "") then
-		ignore = false;
-	end
-
 	-- handle reason
 	if (reason == nil) then
 		reason = "";
@@ -48,7 +38,7 @@ function BlackList:AddPlayer(player, warn, ignore, reason)
 		name = string.upper(string.sub(name, 1, len)) .. string.lower(string.sub(name, len + 1));
 	end
 	
-	player = {["name"] = name, ["warn"] = warn, ["ignore"] = ignore, ["reason"] = reason, ["added"] = added, ["level"] = level, ["class"] = class, ["race"] = race};
+	player = {["name"] = name, ["reason"] = reason, ["added"] = added, ["level"] = level, ["class"] = class, ["race"] = race};
 	table.insert(BlackListedPlayers[GetRealmName()], player);
 
 	self:AddMessage(name .. " " .. ADDED_TO_BLACKLIST, "yellow");
@@ -87,7 +77,7 @@ function BlackList:RemovePlayer(player)
 
 end
 
-function BlackList:UpdateDetails(index, ignore, warn, reason, level, class, race)
+function BlackList:UpdateDetails(index, reason)
 
 	-- update player
 	local player = self:GetPlayerByIndex(index);
@@ -96,23 +86,8 @@ function BlackList:UpdateDetails(index, ignore, warn, reason, level, class, race
 		local _, len = string.find(player["name"], "[%z\1-\127\194-\244][\128-\191]*");
 		player["name"] = string.upper(string.sub(player["name"], 1, len)) .. string.lower(string.sub(player["name"], len + 1));
 	end
-	if (ignore ~= nil) then
-		player["ignore"] = ignore:GetChecked();
-	end
-	if (warn ~= nil) then
-		player["warn"] = warn:GetChecked();
-	end
 	if (reason ~= nil) then
 		player["reason"] = reason;
-	end
-	if (level ~= nil) then
-		player["level"] = level;
-	end
-	if (class ~= nil) then
-		player["class"] = class;
-	end
-	if (race ~= nil) then
-		player["race"] = race;
 	end
 
 	table.remove(BlackListedPlayers[GetRealmName()], index);

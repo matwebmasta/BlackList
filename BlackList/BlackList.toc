@@ -1,9 +1,9 @@
 ## Interface: 20100
-## Title: BlackList Continued
-## Version: 1.02
-## Author: Logan
-## eMail: a.donati@gmail.com
-## Notes: Keeps a list of enemy and friendly players warning you if target or mouse over them.
-## SavedVariables: BlackListedPlayers
+## Title: Billy's BlackList
+## Version: 1.0
+## Author: BillyBobily
+## eMail: ma.an.tr@gmail.com
+## Notes: Keeps a list of players you don't want to play with (black listed)
+## SavedVariables: BlackListedPlayers, BlackListOptions
 
 BlackListUI.xml

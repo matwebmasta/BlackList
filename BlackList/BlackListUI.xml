@@ -69,14 +69,6 @@
 		<HighlightTexture file="Interface\QuestFrame\UI-QuestTitleHighlight" alphaMode="ADD" />
 	</Button>
 
-	<CheckButton name="BlackListDetailsCheckButtonTemplate" inherits="OptionsCheckButtonTemplate" virtual="true">
-		<Scripts>
-			<OnClick>
-				BlackList:UpdateDetails(BlackList:GetSelectedBlackList(), BlackListDetailsFrameCheckButton1, BlackListDetailsFrameCheckButton2);
-			</OnClick>
-		</Scripts>
-	</CheckButton>
-
 	<Frame name="BlackListFrame" hidden="true" setAllPoints="true" virtual="true">
 		<Frames>
 			<Button name="BlackListFrameToggleTab1" inherits="TabButtonTemplate" text="FRIENDS" id="1">
@@ -197,7 +189,7 @@
 						this:SetFrameLevel( this:GetFrameLevel() + 3 );
 					</OnLoad>
 					<OnClick>
-						
+						BlackList:ShowOptions();
 					</OnClick>
 					<OnEnter>
 						
@@ -585,30 +577,6 @@
 					</Layer>
 				</Layers>
 			</Frame>
-			<CheckButton name="BlackListDetailsFrameCheckButton1" inherits="BlackListDetailsCheckButtonTemplate" id="1">
-				<Size>
-					<AbsDimension x="24" y="24" />
-				</Size>
-				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="BlackListDetailsBlackListedLabel" relativePoint="BOTTOMLEFT">
-						<Offset>
-							<AbsDimension x="20" y="-7" />
-						</Offset>
-					</Anchor>
-				</Anchors>
-			</CheckButton>
-			<CheckButton name="BlackListDetailsFrameCheckButton2" inherits="BlackListDetailsCheckButtonTemplate" id="2">
-				<Size>
-					<AbsDimension x="24" y="24" />
-				</Size>
-				<Anchors>
-					<Anchor point="LEFT" relativeTo="BlackListDetailsFrameCheckButton1" relativePoint="RIGHT">
-						<Offset>
-							<AbsDimension x="100" y="0" />
-						</Offset>
-					</Anchor>
-				</Anchors>
-			</CheckButton>
 			<Frame name="BlackListDetailsFrameReasonTextBackground">
 				<Size>
 					<AbsDimension x="266" y="93" />
@@ -691,6 +659,271 @@
 		<Scripts>
 			<OnHide>
 			</OnHide>
+		</Scripts>
+	</Frame>
+
+	<Frame name="BlackListOptionsFrame" toplevel="true" parent="UIParent" movable="true" enableMouse="true" hidden="true">
+		<Size>
+			<AbsDimension x="420" y="400" />
+		</Size>
+		<Anchors>
+			<Anchor point="CENTER" relativeTo="UIParent" relativePoint="CENTER">
+				<Offset>
+					<AbsDimension x="0" y="0" />
+				</Offset>
+			</Anchor>
+		</Anchors>
+		<Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background" edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
+			<BackgroundInsets>
+				<AbsInset left="11" right="12" top="12" bottom="11" />
+			</BackgroundInsets>
+			<TileSize>
+				<AbsValue val="32" />
+			</TileSize>
+			<EdgeSize>
+				<AbsValue val="32" />
+			</EdgeSize>
+		</Backdrop>
+		<Layers>
+			<Layer level="OVERLAY">
+				<Texture name="BlackListOptionsCorner" file="Interface\DialogFrame\UI-DialogBox-Corner">
+					<Size>
+						<AbsDimension x="32" y="32" />
+					</Size>
+					<Anchors>
+						<Anchor point="TOPRIGHT">
+							<Offset>
+								<AbsDimension x="-6" y="-7" />
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</Texture>
+			</Layer>
+			<Layer level="ARTWORK">
+				<FontString name="BlackListOptionsTitle" inherits="GameFontNormal" text="BlackList Options">
+					<Anchors>
+						<Anchor point="TOPLEFT">
+							<Offset>
+								<AbsDimension x="17" y="-18" />
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</FontString>
+				<FontString name="BlackListOptionsGeneralHeader" inherits="GameFontNormalLarge" text="General Settings">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="BlackListOptionsTitle" relativePoint="BOTTOMLEFT">
+							<Offset>
+								<AbsDimension x="0" y="-20" />
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</FontString>
+				<FontString name="BlackListOptionsCommunicationHeader" inherits="GameFontNormalLarge" text="Communication">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="BlackListOptionsGeneralHeader" relativePoint="BOTTOMLEFT">
+							<Offset>
+								<AbsDimension x="0" y="-60" />
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</FontString>
+				<FontString name="BlackListOptionsGroupHeader" inherits="GameFontNormalLarge" text="Group Management">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="BlackListOptionsCommunicationHeader" relativePoint="BOTTOMLEFT">
+							<Offset>
+								<AbsDimension x="0" y="-90" />
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+		<Frames>
+			<Button name="BlackListOptionsCloseButton" inherits="UIPanelCloseButton">
+				<Anchors>
+					<Anchor point="TOPRIGHT">
+						<Offset>
+							<AbsDimension x="-2" y="-3" />
+						</Offset>
+					</Anchor>
+				</Anchors>
+			</Button>
+			<!-- General Settings -->
+			<CheckButton name="BlackListOptionsCheckButton1" inherits="OptionsCheckButtonTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="BlackListOptionsGeneralHeader" relativePoint="BOTTOMLEFT">
+						<Offset>
+							<AbsDimension x="20" y="-15" />
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						BlackList:ToggleOption("playSounds", this:GetChecked());
+					</OnClick>
+				</Scripts>
+			</CheckButton>
+			<FontString name="BlackListOptionsCheckButton1Text" inherits="GameFontHighlight" text="  Play warning sounds">
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="BlackListOptionsCheckButton1" relativePoint="RIGHT">
+						<Offset>
+							<AbsDimension x="0" y="0" />
+						</Offset>
+					</Anchor>
+				</Anchors>
+			</FontString>
+			<CheckButton name="BlackListOptionsCheckButton2" inherits="OptionsCheckButtonTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="BlackListOptionsCheckButton1" relativePoint="BOTTOMLEFT">
+						<Offset>
+							<AbsDimension x="0" y="-10" />
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						BlackList:ToggleOption("warnTarget", this:GetChecked());
+					</OnClick>
+				</Scripts>
+			</CheckButton>
+			<FontString name="BlackListOptionsCheckButton2Text" inherits="GameFontHighlight" text="  Warn me when I target a blacklisted player">
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="BlackListOptionsCheckButton2" relativePoint="RIGHT">
+						<Offset>
+							<AbsDimension x="0" y="0" />
+						</Offset>
+					</Anchor>
+				</Anchors>
+			</FontString>
+			<!-- Communication Options -->
+			<CheckButton name="BlackListOptionsCheckButton3" inherits="OptionsCheckButtonTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="BlackListOptionsCommunicationHeader" relativePoint="BOTTOMLEFT">
+						<Offset>
+							<AbsDimension x="20" y="-15" />
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						BlackList:ToggleOption("preventWhispers", this:GetChecked());
+					</OnClick>
+				</Scripts>
+			</CheckButton>
+			<FontString name="BlackListOptionsCheckButton3Text" inherits="GameFontHighlight" text="  Prevent blacklisted players from whispering me">
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="BlackListOptionsCheckButton3" relativePoint="RIGHT">
+						<Offset>
+							<AbsDimension x="0" y="0" />
+						</Offset>
+					</Anchor>
+				</Anchors>
+			</FontString>
+			<CheckButton name="BlackListOptionsCheckButton4" inherits="OptionsCheckButtonTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="BlackListOptionsCheckButton3" relativePoint="BOTTOMLEFT">
+						<Offset>
+							<AbsDimension x="0" y="-10" />
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						BlackList:ToggleOption("warnWhispers", this:GetChecked());
+					</OnClick>
+				</Scripts>
+			</CheckButton>
+			<FontString name="BlackListOptionsCheckButton4Text" inherits="GameFontHighlight" text="  Warn me when a blacklisted player whispers me">
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="BlackListOptionsCheckButton4" relativePoint="RIGHT">
+						<Offset>
+							<AbsDimension x="0" y="0" />
+						</Offset>
+					</Anchor>
+				</Anchors>
+			</FontString>
+			<!-- Group Management Options -->
+			<CheckButton name="BlackListOptionsCheckButton5" inherits="OptionsCheckButtonTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="BlackListOptionsGroupHeader" relativePoint="BOTTOMLEFT">
+						<Offset>
+							<AbsDimension x="20" y="-15" />
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						BlackList:ToggleOption("preventInvites", this:GetChecked());
+					</OnClick>
+				</Scripts>
+			</CheckButton>
+			<FontString name="BlackListOptionsCheckButton5Text" inherits="GameFontHighlight" text="  Prevent blacklisted players from inviting me to party/raid">
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="BlackListOptionsCheckButton5" relativePoint="RIGHT">
+						<Offset>
+							<AbsDimension x="0" y="0" />
+						</Offset>
+					</Anchor>
+				</Anchors>
+			</FontString>
+			<CheckButton name="BlackListOptionsCheckButton6" inherits="OptionsCheckButtonTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="BlackListOptionsCheckButton5" relativePoint="BOTTOMLEFT">
+						<Offset>
+							<AbsDimension x="0" y="-10" />
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						BlackList:ToggleOption("preventMyInvites", this:GetChecked());
+					</OnClick>
+				</Scripts>
+			</CheckButton>
+			<FontString name="BlackListOptionsCheckButton6Text" inherits="GameFontHighlight" text="  Prevent me from inviting blacklisted players to party/raid">
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="BlackListOptionsCheckButton6" relativePoint="RIGHT">
+						<Offset>
+							<AbsDimension x="0" y="0" />
+						</Offset>
+					</Anchor>
+				</Anchors>
+			</FontString>
+			<CheckButton name="BlackListOptionsCheckButton7" inherits="OptionsCheckButtonTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="BlackListOptionsCheckButton6" relativePoint="BOTTOMLEFT">
+						<Offset>
+							<AbsDimension x="0" y="-10" />
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						BlackList:ToggleOption("warnPartyJoin", this:GetChecked());
+					</OnClick>
+				</Scripts>
+			</CheckButton>
+			<FontString name="BlackListOptionsCheckButton7Text" inherits="GameFontHighlight" text="  Warn me when a blacklisted player joins my party/raid">
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="BlackListOptionsCheckButton7" relativePoint="RIGHT">
+						<Offset>
+							<AbsDimension x="0" y="0" />
+						</Offset>
+					</Anchor>
+				</Anchors>
+			</FontString>
+		</Frames>
+		<Scripts>
+			<OnLoad>
+				this:SetMovable(true);
+				this:RegisterForDrag("LeftButton");
+			</OnLoad>
+			<OnDragStart>
+				this:StartMoving();
+			</OnDragStart>
+			<OnDragStop>
+				this:StopMovingOrSizing();
+			</OnDragStop>
 		</Scripts>
 	</Frame>
 

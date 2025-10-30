@@ -1,22 +1,51 @@
 # BlackList
 
-Backport from TBC to 1.12
+Enhanced for Turtle WoW (Classic 1.12)
 
-Black List is a World of Warcraft addon that adds a new players list (called "Black") to your Friends Tab on the Social Panel, near Friend List, Ignore List and Mute List. It adds a "Black List" tab to the friends frame. This is like Ignore, except unlimited amounts of players with editable descriptions, class, race, level, faction, and detailed reason for blacklisting them. Optionally automatically warns you with sound and a screen message when a blacklisted person is moused over, in a group or raid with you, or in your guild. This mod can even auto kick blacklisted players from your guild if they sneak in (and you have permission to do so). Also optionally rejects whispers and party invites from blacklisted players. 
+BlackList is a World of Warcraft addon that adds a comprehensive player management system to your Friends Tab on the Social Panel. Unlike the built-in Ignore system which has limits, BlackList lets you track unlimited players with detailed information, custom reasons, and flexible warning options.
 
-How I use it?
-It's easy to add someone to your Black List! You can:
-right click con the Target frame and shift click on "Add to BL" menu;
-click the "Add Player" button on "BL" tab in Friends Tab on the Social panel;
-type /blacklist (or /bl) into your chat box.
-For the slash command, you may also specific the reason with the name, "/blacklist <Name> <Reason>".
-If you have someone targeted, Black List will add them and populate the details automatically. If you mouse over him, Black List automatically update information for that player.
-"Warn me" checkbox will toggle warning you with text if the player in list name appears with /who command or in Who tab in Social Panel, or you receive a whisper or a party invite from the person be in the same party as them; it also warns you with text and sound if you target them or mouse over them.
-You can also edit their level, class, and race by clicking the "Edit" button on the details popup or edit the reason by clicking on the textbox and typing.
-To remove someone, click their name in the Black List and click the "Remove Player" button.
+## What it does
 
-Why should I use it?
-For people of the same faction, think about ninjas (for example people that need objects useless for them), or people that use blasphemies insted of commas, or who leaves a party without reason, or "bad player", etc.
-For people of the other faction, think about people attacking you while you're in combat, or camping you, or attacking you only when they have a lvl 60 friend near them, or "/rasp" and "/spit" you in neutral cities... do you need other examples? :)
-Compared to Ignore List, Black List can be very useful because you can add a reason to a player, and it remembers the names and the "why" about people for you. ;) Black List has been abandoned by the original author.
-The torch has been passed on to ElrickEnonimis as author of Black List, as i sure like to add who wants to continue the development of this addon.
+BlackList adds a new "BlackList" tab to your Friends frame, similar to the Friends and Ignore tabs. You can add players with detailed information including their level, class, race, faction, and a custom reason for blacklisting them. The addon can warn you with text and sound when you interact with blacklisted players, and optionally block communication or party invites from them.
+
+The addon now includes a comprehensive options menu where you can control exactly how BlackList behaves. You can choose to block whispers, prevent party invitations, get warnings when targeting players, and much more.
+
+## How to use it
+
+Adding someone to your BlackList is easy:
+
+- Target a player and type /blacklist or /bl in chat
+- Use the "BlackList Player" button in the BlackList tab
+- Type /blacklist PlayerName to add someone by name
+- Add a reason with /blacklist PlayerName They ninja looted my item
+
+You can also use /removeblacklist or /removebl to remove players from your list.
+
+When you have someone targeted, BlackList will automatically fill in their details like level, class, and race. You can edit this information later by clicking on their name in the list to open the details window.
+
+## Options and features
+
+Click the "Options" button in the BlackList tab to access detailed settings:
+
+**General Settings:**
+- Play warning sounds - controls whether you hear audio alerts
+- Warn when targeting - shows messages when you target blacklisted players
+
+**Communication:**
+- Prevent whispers from blacklisted players (they get an auto-ignore response)
+- Warn when blacklisted players whisper you
+
+**Group Management:**
+- Prevent blacklisted players from inviting you to groups
+- Prevent yourself from accidentally inviting blacklisted players
+- Warn when blacklisted players join your party or raid
+
+## Why use BlackList?
+
+For players on your faction, you might blacklist ninja looters, people who leave groups without warning, scammers, or just players you don't want to group with again. For opposite faction players, you might track gankers, campers, or griefers who target you repeatedly.
+
+BlackList is better than the built-in Ignore system because it has no limit on how many players you can add, lets you store detailed information about why you blacklisted someone, and gives you flexible control over how warnings and blocking work.
+
+The addon saves all your data between game sessions and keeps separate lists for each character and realm. It's lightweight and won't interfere with other addons.
+
+BlackList has been updated and enhanced for the Turtle WoW community with modern options and improved functionality while maintaining compatibility with Classic WoW.
