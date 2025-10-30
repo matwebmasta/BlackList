@@ -448,15 +448,21 @@ function BlackList:CreateStandaloneWindow()
 	-- Create scroll frame for player list
 	local scrollFrame = CreateFrame("ScrollFrame", "BlackListStandaloneScrollFrame", frame, "FauxScrollFrameTemplate")
 	scrollFrame:SetPoint("TOPLEFT", frame, "TOPLEFT", 15, -45)
-	scrollFrame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -35, 90)
+	scrollFrame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -30, 90)
 	scrollFrame:SetScript("OnVerticalScroll", function()
 		FauxScrollFrame_OnVerticalScroll(16, function() BlackList:UpdateStandaloneUI() end)
 	end)
 	
-	-- Apply pfUI styling to scrollbar if available
-	if IsPfUIActive() then
-		local scrollBar = getglobal("BlackListStandaloneScrollFrameScrollBar")
-		if scrollBar and pfUI.api.SkinScrollbar then
+	-- Get and configure the scrollbar
+	local scrollBar = getglobal("BlackListStandaloneScrollFrameScrollBar")
+	if scrollBar then
+		scrollBar:Show()
+		scrollBar:ClearAllPoints()
+		scrollBar:SetPoint("TOPLEFT", scrollFrame, "TOPRIGHT", -16, -16)
+		scrollBar:SetPoint("BOTTOMRIGHT", scrollFrame, "BOTTOMRIGHT", 0, 16)
+		
+		-- Apply pfUI styling to scrollbar if available
+		if IsPfUIActive() and pfUI.api.SkinScrollbar then
 			pfUI.api.SkinScrollbar(scrollBar)
 		end
 	end
@@ -665,47 +671,69 @@ function BlackList:ShowStandaloneDetails()
 		reasonLabel:SetPoint("TOPLEFT", dateText, "BOTTOMLEFT", 0, -15)
 		reasonLabel:SetText("Reason:")
 		
-		-- Reason text box (scrollable)
-		local reasonBox = CreateFrame("ScrollFrame", "BlackListStandaloneDetails_ReasonScroll", detailsFrame, "UIPanelScrollFrameTemplate")
-		reasonBox:SetPoint("TOPLEFT", reasonLabel, "BOTTOMLEFT", 0, -10)
-		reasonBox:SetPoint("BOTTOMRIGHT", detailsFrame, "BOTTOMRIGHT", -30, 15)
-		
-		local reasonText = CreateFrame("EditBox", "BlackListStandaloneDetails_ReasonText", reasonBox)
-		reasonText:SetWidth(240)
-		reasonText:SetHeight(100)
-		reasonText:SetMultiLine(true)
+		-- Reason text box (single line)
+		local reasonText = CreateFrame("EditBox", "BlackListStandaloneDetails_ReasonText", detailsFrame)
+		reasonText:SetPoint("TOPLEFT", reasonLabel, "BOTTOMLEFT", 5, -10)
+		reasonText:SetPoint("RIGHT", detailsFrame, "RIGHT", -20, 0)
+		reasonText:SetHeight(24)
 		reasonText:SetAutoFocus(false)
 		reasonText:SetFontObject(GameFontHighlight)
-		reasonText:SetTextInsets(5, 5, 5, 5)  -- Add padding
-		reasonBox:SetScrollChild(reasonText)
+		reasonText:SetTextInsets(5, 0, 5, 0)
 		
-		-- Save reason when focus is lost
-		reasonText:SetScript("OnEditFocusLost", function()
-			local index = BlackList:GetSelectedBlackList()
-			if index and index > 0 then
-				local player = BlackList:GetPlayerByIndex(index)
-				if player then
-					player["reason"] = this:GetText()
-				end
-			end
-		end)
-		
-		-- Backdrop for reason box
-		reasonBox:SetBackdrop({
+		-- Backdrop for reason text box
+		reasonText:SetBackdrop({
 			bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
 			edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
 			tile = true, tileSize = 16, edgeSize = 16,
 			insets = {left = 4, right = 4, top = 4, bottom = 4}
 		})
-		reasonBox:SetBackdropColor(0, 0, 0, 0.5)
+		reasonText:SetBackdropColor(0, 0, 0, 0.5)
 		
-		-- Close details when Options is opened
+		-- Function to save reason
+		local function SaveReason()
+			local index = BlackList:GetSelectedBlackList()
+			if index and index > 0 then
+				local player = BlackList:GetPlayerByIndex(index)
+				if player then
+					local text = reasonText:GetText()
+					if text ~= player["reason"] then
+						player["reason"] = text
+						DEFAULT_CHAT_FRAME:AddMessage("BlackList: Reason saved for " .. player["name"], 0, 1, 0)
+					end
+				end
+			end
+		end
+		
+		-- Save on multiple events to ensure consistency
+		reasonText:SetScript("OnEditFocusLost", SaveReason)
+		reasonText:SetScript("OnEscapePressed", function()
+			this:ClearFocus()
+			SaveReason()
+		end)
+		reasonText:SetScript("OnEnterPressed", function()
+			SaveReason()
+		end)
+		
+		-- Save when details window is hidden
+		detailsFrame:SetScript("OnHide", function()
+			SaveReason()
+		end)
+		
+		-- Close options when details is opened
 		detailsFrame:SetScript("OnShow", function()
 			local optionsFrame = getglobal("BlackListOptionsFrame_New")
 			if optionsFrame and optionsFrame:IsVisible() then
 				optionsFrame:Hide()
 			end
 		end)
+		
+		-- Store reference to SaveReason so it can be called from outside
+		detailsFrame.SaveReason = SaveReason
+	end
+	
+	-- Save previous player's reason before showing new one
+	if detailsFrame.SaveReason then
+		detailsFrame.SaveReason()
 	end
 	
 	-- Update details
