@@ -425,12 +425,12 @@ function BlackList:CreateStandaloneWindow()
 	
 	-- Title
 	local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-	title:SetPoint("TOP", 0, -15)
+	title:SetPoint("TOP", frame, "TOP", 0, -15)
 	title:SetText("Black List")
 	
 	-- Close button
 	local closeBtn = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
-	closeBtn:SetPoint("TOPRIGHT", -5, -5)
+	closeBtn:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -5, -5)
 	
 	-- Make draggable
 	frame:SetScript("OnMouseDown", function()
@@ -442,25 +442,60 @@ function BlackList:CreateStandaloneWindow()
 		this:StopMovingOrSizing()
 	end)
 	
-	-- Scroll frame for list (reuse existing BlackList buttons logic)
-	-- For now, just add buttons at the bottom
+	-- Create scroll frame for player list
+	local scrollFrame = CreateFrame("ScrollFrame", "BlackListStandaloneScrollFrame", frame, "FauxScrollFrameTemplate")
+	scrollFrame:SetPoint("TOPLEFT", frame, "TOPLEFT", 15, -45)
+	scrollFrame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -35, 90)
+	scrollFrame:SetScript("OnVerticalScroll", function()
+		FauxScrollFrame_OnVerticalScroll(16, function() BlackList:UpdateStandaloneUI() end)
+	end)
 	
-	-- Add Friend button
+	-- Create player list buttons (7 visible at a time)
+	for i = 1, 7 do
+		local button = CreateFrame("Button", "BlackListStandaloneButton"..i, frame)
+		button:SetWidth(298)
+		button:SetHeight(16)
+		
+		if i == 1 then
+			button:SetPoint("TOPLEFT", scrollFrame, "TOPLEFT", 0, 0)
+		else
+			button:SetPoint("TOP", getglobal("BlackListStandaloneButton"..(i-1)), "BOTTOM", 0, 0)
+		end
+		
+		-- Name text
+		local nameText = button:CreateFontString("BlackListStandaloneButton"..i.."Name", "OVERLAY", "GameFontNormal")
+		nameText:SetPoint("TOPLEFT", button, "TOPLEFT", 10, -3)
+		
+		-- Highlight texture
+		local highlight = button:CreateTexture(nil, "BACKGROUND")
+		highlight:SetTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight")
+		highlight:SetBlendMode("ADD")
+		highlight:SetAllPoints(button)
+		button:SetHighlightTexture(highlight)
+		
+		-- Click handler
+		button:SetScript("OnClick", function()
+			BlackList:SetSelectedBlackList(this:GetID())
+			BlackList:UpdateStandaloneUI()
+		end)
+	end
+	
+	-- Add Player button (bottom left)
 	local addBtn = CreateFrame("Button", "BlackListStandalone_AddButton", frame, "UIPanelButtonTemplate")
-	addBtn:SetWidth(160)
+	addBtn:SetWidth(100)
 	addBtn:SetHeight(22)
-	addBtn:SetPoint("BOTTOMLEFT", 15, 15)
+	addBtn:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 15, 45)
 	addBtn:SetText("Add Player")
 	addBtn:SetScript("OnClick", function()
 		StaticPopup_Show("BLACKLIST_PLAYER")
 	end)
 	
-	-- Remove button
+	-- Remove button (bottom left, under Add)
 	local removeBtn = CreateFrame("Button", "BlackListStandalone_RemoveButton", frame, "UIPanelButtonTemplate")
-	removeBtn:SetWidth(160)
+	removeBtn:SetWidth(100)
 	removeBtn:SetHeight(22)
-	removeBtn:SetPoint("BOTTOMRIGHT", -15, 15)
-	removeBtn:SetText("Remove Player")
+	removeBtn:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 15, 15)
+	removeBtn:SetText("Remove")
 	removeBtn:SetScript("OnClick", function()
 		local index = BlackList:GetSelectedBlackList()
 		if index and index > 0 then
@@ -472,10 +507,21 @@ function BlackList:CreateStandaloneWindow()
 		end
 	end)
 	
+	-- Options button (bottom right)
+	local optionsBtn = CreateFrame("Button", "BlackListStandalone_OptionsButton", frame, "UIPanelButtonTemplate")
+	optionsBtn:SetWidth(100)
+	optionsBtn:SetHeight(22)
+	optionsBtn:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -15, 15)
+	optionsBtn:SetText("Options")
+	optionsBtn:SetScript("OnClick", function()
+		BlackList:ShowNewOptions()
+	end)
+	
 	-- Apply pfUI styling to buttons if available
 	if IsPfUIActive() then
 		pfUI.api.CreateBackdrop(addBtn, nil, true)
 		pfUI.api.CreateBackdrop(removeBtn, nil, true)
+		pfUI.api.CreateBackdrop(optionsBtn, nil, true)
 	end
 	
 	DEFAULT_CHAT_FRAME:AddMessage("BlackList: Standalone window created", 0, 1, 0)
@@ -494,9 +540,57 @@ function BlackList:ToggleStandaloneWindow()
 end
 
 function BlackList:UpdateStandaloneUI()
-	-- TODO: Populate the list with blacklisted players
-	-- For now, just a placeholder
-	DEFAULT_CHAT_FRAME:AddMessage("BlackList: UI updated", 0, 1, 0)
+	local numBlackLists = BlackList:GetNumBlackLists()
+	local selectedBlackList = self:GetSelectedBlackList()
+	
+	-- Set default selection
+	if numBlackLists > 0 then
+		if selectedBlackList == 0 or selectedBlackList > numBlackLists then
+			self:SetSelectedBlackList(1)
+			selectedBlackList = 1
+		end
+		-- Enable remove button
+		local removeBtn = getglobal("BlackListStandalone_RemoveButton")
+		if removeBtn then removeBtn:Enable() end
+	else
+		-- Disable remove button
+		local removeBtn = getglobal("BlackListStandalone_RemoveButton")
+		if removeBtn then removeBtn:Disable() end
+	end
+	
+	-- Update scroll frame
+	local scrollFrame = getglobal("BlackListStandaloneScrollFrame")
+	if not scrollFrame then return end
+	
+	local offset = FauxScrollFrame_GetOffset(scrollFrame)
+	
+	-- Update each button
+	for i = 1, 7 do
+		local index = i + offset
+		local button = getglobal("BlackListStandaloneButton"..i)
+		local nameText = getglobal("BlackListStandaloneButton"..i.."Name")
+		
+		if button and nameText then
+			button:SetID(index)
+			
+			if index <= numBlackLists then
+				nameText:SetText(self:GetNameByIndex(index))
+				button:Show()
+				
+				-- Update highlight
+				if index == selectedBlackList then
+					button:LockHighlight()
+				else
+					button:UnlockHighlight()
+				end
+			else
+				button:Hide()
+			end
+		end
+	end
+	
+	-- Update scroll frame
+	FauxScrollFrame_Update(scrollFrame, numBlackLists, 7, 16)
 end
 
 function BlackList:ClickBlackList()
